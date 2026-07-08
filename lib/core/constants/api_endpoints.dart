@@ -1,0 +1,75 @@
+/// All API endpoint paths — matches backend controllers exactly
+class ApiEndpoints {
+  ApiEndpoints._();
+
+  // ── Auth ─────────────────────────────────────────────────
+  static const String login = '/auth/login';
+  static const String register = '/auth/register';
+
+  // ── Portal – Dashboard ────────────────────────────────────
+  static const String customerStats = '/portal/dashboard/customer-stats';
+  static const String agentStats = '/portal/dashboard/agent-stats';
+
+  // ── Portal – Policies ─────────────────────────────────────
+  static const String portalPolicies = '/portal/policies';
+  static const String portalPolicySearch = '/portal/policies/search';
+  static const String portalPolicyTypes = '/portal/policies/types';
+  static String portalPolicyById(int id) => '/portal/policies/$id';
+
+  // ── Portal – Insurances (my policies) ────────────────────
+  static const String portalInsurances = '/portal/insurances';
+  static String portalInsuranceById(int id) => '/portal/insurances/$id';
+
+  // ── Insurance sub-entities ────────────────────────────────
+  static String insuredPersons(int insuranceId) => '/insurances/$insuranceId/insured';
+  static String insuredPersonById(int insuranceId, int id) => '/insurances/$insuranceId/insured/$id';
+  static String nominees(int insuranceId) => '/insurances/$insuranceId/nominees';
+  static String nomineeById(int insuranceId, int id) => '/insurances/$insuranceId/nominees/$id';
+  static String insurancePayments(int insuranceId) => '/insurances/$insuranceId/payments';
+  static String insurancePaymentById(int insuranceId, int id) => '/insurances/$insuranceId/payments/$id';
+  static String insurancePaymentStatus(int insuranceId, int id) => '/insurances/$insuranceId/payments/$id/status';
+  static String insurancePaymentReceipt(int insuranceId, int id) => '/insurances/$insuranceId/payments/$id/receipt';
+  static String insuranceDocuments(int insuranceId) => '/insurances/$insuranceId/documents';
+  static String insuranceDocumentById(int insuranceId, int id) => '/insurances/$insuranceId/documents/$id';
+  static String insuranceDocumentStatus(int insuranceId, int id) => '/insurances/$insuranceId/documents/$id/status';
+
+  // ── Portal – Claims ───────────────────────────────────────
+  static const String portalClaims = '/portal/claims';
+  static String portalClaimById(int id) => '/portal/claims/$id';
+
+  // ── Claim documents ───────────────────────────────────────
+  static String claimDocuments(int claimId) => '/claims/$claimId/documents';
+  static String claimDocumentById(int claimId, int id) => '/claims/$claimId/documents/$id';
+  static String claimDocumentStatus(int claimId, int id) => '/claims/$claimId/documents/$id/status';
+
+  // ── Portal – Notices ──────────────────────────────────────
+  static const String portalNotices = '/portal/notices';
+
+  // ── Portal – Settings ─────────────────────────────────────
+  static const String portalSettings = '/portal/settings/public';
+
+  // ── Portal – Subscriptions ────────────────────────────────
+  static const String portalSubscriptions = '/portal/subscriptions';
+
+  // ── Portal – Transactions ─────────────────────────────────
+  static const String portalTransactions = '/portal/transactions';
+  static String portalTransactionReceipt(int id) => '/portal/transactions/$id/receipt';
+
+  // ── Portal – Histories ────────────────────────────────────
+  static const String portalHistories = '/portal/histories';
+
+  // ── Portal – Customer ─────────────────────────────────────
+  static const String portalCustomerAgents = '/portal/customer/agents';
+
+  // ── Portal – Lookups ──────────────────────────────────────
+  static const String portalPolicySubTypes = '/portal/policy-sub-types';
+  static const String portalPolicyDurations = '/portal/policy-durations';
+  static const String portalPolicyFors = '/portal/policy-fors';
+  static const String portalDocumentTypes = '/portal/document-types';
+
+  // ── Contact (public) ─────────────────────────────────────
+  static const String contact = '/contact';
+
+  // ── Taxes (public) ───────────────────────────────────────
+  static const String activeTaxes = '/admin/taxes/active';
+}
