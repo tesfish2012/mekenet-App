@@ -1,38 +1,54 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'api_response.freezed.dart';
-part 'api_response.g.dart';
-
 /// Standard API envelope: { success, message, data }
-@freezed
-class ApiResponse<T> with _$ApiResponse<T> {
-  const factory ApiResponse({
-    @Default(true) bool success,
-    @Default('') String message,
-    T? data,
-  }) = _ApiResponse<T>;
+class ApiResponse<T> {
+  final bool success;
+  final String message;
+  final T? data;
+
+  const ApiResponse({
+    this.success = true,
+    this.message = '',
+    this.data,
+  });
 
   factory ApiResponse.fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
-  ) =>
-      _$ApiResponseFromJson(json, fromJsonT);
+  ) {
+    return ApiResponse<T>(
+      success: json['success'] as bool? ?? true,
+      message: json['message'] as String? ?? '',
+      data: json['data'] != null ? fromJsonT(json['data']) : null,
+    );
+  }
 }
 
 /// Paginated list envelope
-@freezed
-class PagedResponse<T> with _$PagedResponse<T> {
-  const factory PagedResponse({
-    @Default([]) List<T> content,
-    @Default(0) int page,
-    @Default(20) int size,
-    @Default(0) int totalElements,
-    @Default(0) int totalPages,
-  }) = _PagedResponse<T>;
+class PagedResponse<T> {
+  final List<T> content;
+  final int page;
+  final int size;
+  final int totalElements;
+  final int totalPages;
+
+  const PagedResponse({
+    this.content = const [],
+    this.page = 0,
+    this.size = 20,
+    this.totalElements = 0,
+    this.totalPages = 0,
+  });
 
   factory PagedResponse.fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
-  ) =>
-      _$PagedResponseFromJson(json, fromJsonT);
+  ) {
+    final rawList = json['content'] as List<dynamic>? ?? [];
+    return PagedResponse<T>(
+      content: rawList.map(fromJsonT).toList(),
+      page: json['page'] as int? ?? 0,
+      size: json['size'] as int? ?? 20,
+      totalElements: json['totalElements'] as int? ?? 0,
+      totalPages: json['totalPages'] as int? ?? 0,
+    );
+  }
 }

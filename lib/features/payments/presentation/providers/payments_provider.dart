@@ -1,60 +1,56 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../policies/presentation/providers/policies_provider.dart';
 import '../../data/models/payment_model.dart';
 
-part 'payments_provider.g.dart';
-
-/// Aggregate all insurance payments for the current customer
-@riverpod
-Future<List<PaymentModel>> allPayments(AllPaymentsRef ref) async {
+final allPaymentsProvider = FutureProvider<List<PaymentModel>>((ref) async {
   final dio = getIt<Dio>();
-  // Fetch my insurances first, then collect their payments
-  final insResp = await dio.get(
-    ApiEndpoints.portalInsurances,
-    queryParameters: {'page': 0, 'size': 50},
-  );
-  final insData = insResp.data as Map<String, dynamic>;
-  final insPayload = insData['data'];
-  final List<dynamic> insuranceList = insPayload is Map
-      ? (insPayload['content'] as List? ?? [])
-      : (insPayload as List? ?? []);
+  final insurances = await ref.watch(myInsurancesProvider.future);
 
   final allPayments = <PaymentModel>[];
-  for (final ins in insuranceList) {
-    final insuranceId = (ins as Map<String, dynamic>)['id'] as int;
+  for (final ins in insurances) {
     try {
-      final payResp = await dio.get(ApiEndpoints.insurancePayments(insuranceId));
-      final payData = payResp.data as Map<String, dynamic>;
-      final payPayload = payData['data'];
-      final List<dynamic> payments = payPayload is List
-          ? payPayload
-          : (payPayload is Map ? (payPayload['content'] as List? ?? []) : []);
+      final resp = await dio.get(ApiEndpoints.insurancePayments(ins.id));
+      final data = resp.data as Map<String, dynamic>;
+      final payload = data['data'];
+      final List<dynamic> list = payload is List
+          ? payload
+          : (payload is Map ? (payload['content'] as List? ?? []) : []);
       allPayments.addAll(
-        payments.map((e) => PaymentModel.fromJson(e as Map<String, dynamic>)),
+        list.map((e) {
+          final map = e as Map<String, dynamic>;
+          // Inject insuranceId & policy title for display purposes
+          return PaymentModel.fromJson({
+            ...map,
+            'insuranceId': ins.id,
+            'insuranceNumber': ins.insuranceNumber,
+            'policyTitle': ins.policyTitle,
+          });
+        }),
       );
     } catch (_) {
-      // Skip this insurance's payments if fetch fails
+      // Skip silently
     }
   }
 
-  allPayments.sort((a, b) =>
-      (b.paymentDate ?? '').compareTo(a.paymentDate ?? ''));
+  allPayments.sort(
+    (a, b) => (b.paymentDate ?? '').compareTo(a.paymentDate ?? ''),
+  );
   return allPayments;
-}
+});
 
-@riverpod
-Future<PaymentModel> paymentById(PaymentByIdRef ref, int id) async {
-  final dio = getIt<Dio>();
-  // We need insuranceId to build the path; use a broad search approach
+final paymentByIdProvider =
+    FutureProvider.family<PaymentModel, int>((ref, id) async {
   final payments = await ref.watch(allPaymentsProvider.future);
   return payments.firstWhere(
     (p) => p.id == id,
-    orElse: () => throw Exception('Payment not found'),
+    orElse: () => throw Exception('Payment #$id not found'),
   );
-}
+});
 
 // ── Upload Receipt ────────────────────────────────────────
 

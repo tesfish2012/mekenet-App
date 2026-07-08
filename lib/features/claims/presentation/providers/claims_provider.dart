@@ -1,39 +1,39 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../data/models/claim_model.dart';
 
-part 'claims_provider.g.dart';
+List<T> _extractList<T>(
+  dynamic payload,
+  T Function(Map<String, dynamic>) fromJson,
+) {
+  final List<dynamic> list = payload is Map
+      ? (payload['content'] as List? ?? [])
+      : (payload as List? ?? []);
+  return list.map((e) => fromJson(e as Map<String, dynamic>)).toList();
+}
 
-@riverpod
-Future<List<ClaimModel>> myClaims(MyClaimsRef ref) async {
+final myClaimsProvider = FutureProvider<List<ClaimModel>>((ref) async {
   final dio = getIt<Dio>();
   final response = await dio.get(
     ApiEndpoints.portalClaims,
     queryParameters: {'page': 0, 'size': 50},
   );
   final data = response.data as Map<String, dynamic>;
-  final payload = data['data'];
-  if (payload is Map) {
-    final list = payload['content'] as List? ?? [];
-    return list.map((e) => ClaimModel.fromJson(e as Map<String, dynamic>)).toList();
-  }
-  if (payload is List) {
-    return payload.map((e) => ClaimModel.fromJson(e as Map<String, dynamic>)).toList();
-  }
-  return [];
-}
+  return _extractList(data['data'], ClaimModel.fromJson);
+});
 
-@riverpod
-Future<ClaimModel> claimById(ClaimByIdRef ref, int id) async {
+final claimByIdProvider =
+    FutureProvider.family<ClaimModel, int>((ref, id) async {
   final dio = getIt<Dio>();
   final response = await dio.get(ApiEndpoints.portalClaimById(id));
   final data = response.data as Map<String, dynamic>;
   final payload = data['data'] as Map<String, dynamic>? ?? data;
   return ClaimModel.fromJson(payload);
-}
+});
 
 // ── Submit Claim ──────────────────────────────────────────
 

@@ -1,12 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/storage/preferences_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
-
-part 'auth_provider.g.dart';
 
 // ── Repository Provider ───────────────────────────────────
 
@@ -50,8 +47,7 @@ class AuthState {
 
 // ── Auth Notifier ─────────────────────────────────────────
 
-@riverpod
-class AuthNotifier extends _$AuthNotifier {
+class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     // Check stored session on startup
@@ -124,6 +120,11 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 }
+
+/// Manually defined provider for AuthNotifier
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
 // ── Convenience Providers ─────────────────────────────────
 

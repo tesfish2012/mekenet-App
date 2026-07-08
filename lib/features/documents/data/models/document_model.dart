@@ -1,22 +1,61 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class InsuranceDocumentModel {
+  final int id;
+  final int insuranceId;
+  final String? insuranceNumber;
+  final String documentType;
+  final String filePath;
+  final String? originalName;
+  final int? fileSize;
+  final String status;
+  final String? createdAt;
 
-part 'document_model.freezed.dart';
-part 'document_model.g.dart';
+  const InsuranceDocumentModel({
+    required this.id,
+    this.insuranceId = 0,
+    this.insuranceNumber,
+    this.documentType = '',
+    this.filePath = '',
+    this.originalName,
+    this.fileSize,
+    this.status = 'PENDING',
+    this.createdAt,
+  });
 
-@freezed
-class InsuranceDocumentModel with _$InsuranceDocumentModel {
-  const factory InsuranceDocumentModel({
-    required int id,
-    @Default(0) int insuranceId,
+  factory InsuranceDocumentModel.fromJson(Map<String, dynamic> json) {
+    return InsuranceDocumentModel(
+      id: json['id'] as int? ?? 0,
+      insuranceId: json['insuranceId'] as int? ?? 0,
+      insuranceNumber: json['insuranceNumber'] as String?,
+      documentType: json['documentType'] as String? ?? '',
+      filePath: json['filePath'] as String? ?? '',
+      originalName: json['originalName'] as String?,
+      fileSize: json['fileSize'] as int?,
+      status: json['status'] as String? ?? 'PENDING',
+      createdAt: json['createdAt'] as String?,
+    );
+  }
+
+  InsuranceDocumentModel copyWith({
+    int? id,
+    int? insuranceId,
     String? insuranceNumber,
-    @Default('') String documentType,
-    @Default('') String filePath,
+    String? documentType,
+    String? filePath,
     String? originalName,
     int? fileSize,
-    @Default('PENDING') String status,
+    String? status,
     String? createdAt,
-  }) = _InsuranceDocumentModel;
-
-  factory InsuranceDocumentModel.fromJson(Map<String, dynamic> json) =>
-      _$InsuranceDocumentModelFromJson(json);
+  }) {
+    return InsuranceDocumentModel(
+      id: id ?? this.id,
+      insuranceId: insuranceId ?? this.insuranceId,
+      insuranceNumber: insuranceNumber ?? this.insuranceNumber,
+      documentType: documentType ?? this.documentType,
+      filePath: filePath ?? this.filePath,
+      originalName: originalName ?? this.originalName,
+      fileSize: fileSize ?? this.fileSize,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

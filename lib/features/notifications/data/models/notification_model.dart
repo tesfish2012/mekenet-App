@@ -1,20 +1,28 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class NotificationModel {
+  final int id;
+  final String title;
+  final String description;
+  final bool published;
+  final bool isRead;
+  final String? createdAt;
 
-part 'notification_model.freezed.dart';
-part 'notification_model.g.dart';
+  const NotificationModel({
+    required this.id,
+    this.title = '',
+    this.description = '',
+    this.published = false,
+    this.isRead = false,
+    this.createdAt,
+  });
 
-/// Maps to the notice_boards table returned by /api/portal/notices
-@freezed
-class NotificationModel with _$NotificationModel {
-  const factory NotificationModel({
-    required int id,
-    @Default('') String title,
-    @Default('') String description,
-    @Default(false) bool published,
-    @Default(false) bool isRead,
-    String? createdAt,
-  }) = _NotificationModel;
-
-  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
-      _$NotificationModelFromJson(json);
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    return NotificationModel(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      published: json['published'] as bool? ?? false,
+      isRead: json['isRead'] as bool? ?? false,
+      createdAt: json['createdAt'] as String?,
+    );
+  }
 }

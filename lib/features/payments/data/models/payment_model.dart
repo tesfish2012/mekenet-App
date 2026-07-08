@@ -1,24 +1,48 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class PaymentModel {
+  final int id;
+  final int insuranceId;
+  final String? insuranceNumber;
+  final String? policyTitle;
+  final String? paymentDate;
+  final double amount;
+  final String? paymentType;
+  final String? transactionId;
+  final String status;
+  final String? receiptFile;
+  final String? notes;
 
-part 'payment_model.freezed.dart';
-part 'payment_model.g.dart';
+  const PaymentModel({
+    required this.id,
+    this.insuranceId = 0,
+    this.insuranceNumber,
+    this.policyTitle,
+    this.paymentDate,
+    this.amount = 0.0,
+    this.paymentType,
+    this.transactionId,
+    this.status = 'PENDING',
+    this.receiptFile,
+    this.notes,
+  });
 
-@freezed
-class PaymentModel with _$PaymentModel {
-  const factory PaymentModel({
-    required int id,
-    @Default(0) int insuranceId,
-    String? insuranceNumber,
-    String? policyTitle,
-    String? paymentDate,
-    @Default(0.0) double amount,
-    String? paymentType,
-    String? transactionId,
-    @Default('PENDING') String status,
-    String? receiptFile,
-    String? notes,
-  }) = _PaymentModel;
+  factory PaymentModel.fromJson(Map<String, dynamic> json) {
+    return PaymentModel(
+      id: _toInt(json['id']),
+      insuranceId: _toInt(json['insuranceId']),
+      insuranceNumber: json['insuranceNumber'] as String?,
+      policyTitle: json['policyTitle'] as String?,
+      paymentDate: json['paymentDate'] as String?,
+      amount: _toDouble(json['amount']),
+      paymentType: json['paymentType'] as String?,
+      transactionId: json['transactionId'] as String?,
+      status: json['status'] as String? ?? 'PENDING',
+      receiptFile: json['receiptFile'] as String?,
+      notes: json['notes'] as String?,
+    );
+  }
 
-  factory PaymentModel.fromJson(Map<String, dynamic> json) =>
-      _$PaymentModelFromJson(json);
+  static int _toInt(dynamic v) =>
+      v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);
+  static double _toDouble(dynamic v) =>
+      v == null ? 0.0 : (v is double ? v : double.tryParse(v.toString()) ?? 0.0);
 }

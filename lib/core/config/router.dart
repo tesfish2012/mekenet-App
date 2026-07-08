@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/authentication/presentation/pages/login_page.dart';
 import '../../features/authentication/presentation/pages/register_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
@@ -35,15 +34,13 @@ import '../../shared/pages/terms_page.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../constants/app_constants.dart';
 
-part 'router.g.dart';
-
 // ── Shell navigation keys ─────────────────────────────────
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-@riverpod
-GoRouter router(RouterRef ref) {
+/// Router provider - manually defined (no code generation needed)
+final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
 
   return GoRouter(
@@ -287,7 +284,7 @@ GoRouter router(RouterRef ref) {
       ),
     ],
   );
-}
+});
 
 // ── Page transition helpers ───────────────────────────────
 

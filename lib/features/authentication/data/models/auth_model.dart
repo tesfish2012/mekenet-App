@@ -1,50 +1,82 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/user_entity.dart';
 
-part 'auth_model.freezed.dart';
-part 'auth_model.g.dart';
+class LoginRequest {
+  final String email;
+  final String password;
 
-@freezed
-class LoginRequest with _$LoginRequest {
-  const factory LoginRequest({
-    required String email,
-    required String password,
-  }) = _LoginRequest;
+  const LoginRequest({
+    required this.email,
+    required this.password,
+  });
 
-  factory LoginRequest.fromJson(Map<String, dynamic> json) =>
-      _$LoginRequestFromJson(json);
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'password': password,
+      };
 }
 
-@freezed
-class RegisterRequest with _$RegisterRequest {
-  const factory RegisterRequest({
-    required String name,
-    required String email,
-    required String password,
-    String? phone,
-  }) = _RegisterRequest;
+class RegisterRequest {
+  final String name;
+  final String email;
+  final String password;
+  final String? phone;
 
-  factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
-      _$RegisterRequestFromJson(json);
+  const RegisterRequest({
+    required this.name,
+    required this.email,
+    required this.password,
+    this.phone,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'email': email,
+        'password': password,
+        if (phone != null) 'phone': phone,
+      };
 }
 
-@freezed
-class AuthResponseModel with _$AuthResponseModel {
-  const factory AuthResponseModel({
-    @Default('') String accessToken,
-    @Default('') String refreshToken,
-    @Default('Bearer') String tokenType,
-    @Default('CUSTOMER') String role,
-    @Default('') String name,
-    @Default('') String email,
-    int? companyId,
-  }) = _AuthResponseModel;
+class AuthResponseModel {
+  final String accessToken;
+  final String refreshToken;
+  final String tokenType;
+  final String role;
+  final String name;
+  final String email;
+  final int? companyId;
 
-  factory AuthResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$AuthResponseModelFromJson(json);
-}
+  const AuthResponseModel({
+    this.accessToken = '',
+    this.refreshToken = '',
+    this.tokenType = 'Bearer',
+    this.role = 'CUSTOMER',
+    this.name = '',
+    this.email = '',
+    this.companyId,
+  });
 
-extension AuthResponseModelX on AuthResponseModel {
+  factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
+    return AuthResponseModel(
+      accessToken: json['accessToken'] as String? ?? '',
+      refreshToken: json['refreshToken'] as String? ?? '',
+      tokenType: json['tokenType'] as String? ?? 'Bearer',
+      role: json['role'] as String? ?? 'CUSTOMER',
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      companyId: json['companyId'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'accessToken': accessToken,
+        'refreshToken': refreshToken,
+        'tokenType': tokenType,
+        'role': role,
+        'name': name,
+        'email': email,
+        if (companyId != null) 'companyId': companyId,
+      };
+
   UserEntity toEntity() => UserEntity(
         accessToken: accessToken,
         refreshToken: refreshToken,

@@ -1,14 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../data/models/notification_model.dart';
 
-part 'notifications_provider.g.dart';
-
-@riverpod
-Future<List<NotificationModel>> notices(NoticesRef ref) async {
+final noticesProvider =
+    FutureProvider<List<NotificationModel>>((ref) async {
   final dio = getIt<Dio>();
   try {
     final response = await dio.get(ApiEndpoints.portalNotices);
@@ -23,7 +20,7 @@ Future<List<NotificationModel>> notices(NoticesRef ref) async {
   } catch (_) {
     return [];
   }
-}
+});
 
 // ── Local read-state overlay ──────────────────────────────
 

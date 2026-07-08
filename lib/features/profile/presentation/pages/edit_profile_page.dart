@@ -83,7 +83,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
     );
 
-    final success = await ref.read(updateProfileProvider.notifier).update(req);
+    final success = await ref.read(updateProfileProvider.notifier).saveProfile(req);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

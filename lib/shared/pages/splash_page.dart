@@ -35,8 +35,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (!prefs.isOnboardingDone()) {
       context.go(AppConstants.routeOnboarding);
     } else if (authState.isAuthenticated) {
-      // Check if PIN login is preferred
-      final secureStorage = ref.read(authRepositoryProvider);
       context.go(AppConstants.routeDashboard);
     } else {
       context.go(AppConstants.routeLogin);

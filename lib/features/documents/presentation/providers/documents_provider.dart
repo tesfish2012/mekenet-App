@@ -1,19 +1,15 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/constants/api_endpoints.dart';
 import '../../../policies/presentation/providers/policies_provider.dart';
 import '../../data/models/document_model.dart';
 
-part 'documents_provider.g.dart';
-
-/// Aggregates all documents across all user insurances
-@riverpod
-Future<List<InsuranceDocumentModel>> allDocuments(AllDocumentsRef ref) async {
+final allDocumentsProvider =
+    FutureProvider<List<InsuranceDocumentModel>>((ref) async {
   final dio = getIt<Dio>();
-
-  // Reuse the insurances list
   final insurances = await ref.watch(myInsurancesProvider.future);
 
   final allDocs = <InsuranceDocumentModel>[];
@@ -26,18 +22,24 @@ Future<List<InsuranceDocumentModel>> allDocuments(AllDocumentsRef ref) async {
           ? payload
           : (payload is Map ? (payload['content'] as List? ?? []) : []);
       allDocs.addAll(
-        list.map((e) => InsuranceDocumentModel.fromJson(e as Map<String, dynamic>)
-            .copyWith(insuranceId: ins.id, insuranceNumber: ins.insuranceNumber)),
+        list.map(
+          (e) => InsuranceDocumentModel.fromJson(e as Map<String, dynamic>)
+              .copyWith(
+                insuranceId: ins.id,
+                insuranceNumber: ins.insuranceNumber,
+              ),
+        ),
       );
     } catch (_) {
-      // Skip failed fetches silently
+      // Skip silently
     }
   }
 
-  allDocs.sort((a, b) =>
-      (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
+  allDocs.sort(
+    (a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''),
+  );
   return allDocs;
-}
+});
 
 // ── Upload Document ───────────────────────────────────────
 

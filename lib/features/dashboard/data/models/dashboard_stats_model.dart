@@ -1,21 +1,40 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class CustomerStatsModel {
+  final int totalInsurances;
+  final int activeInsurances;
+  final int pendingInsurances;
+  final int expiredInsurances;
+  final int totalClaims;
+  final int pendingClaims;
+  final int approvedClaims;
+  final double totalPremium;
 
-part 'dashboard_stats_model.freezed.dart';
-part 'dashboard_stats_model.g.dart';
+  const CustomerStatsModel({
+    this.totalInsurances = 0,
+    this.activeInsurances = 0,
+    this.pendingInsurances = 0,
+    this.expiredInsurances = 0,
+    this.totalClaims = 0,
+    this.pendingClaims = 0,
+    this.approvedClaims = 0,
+    this.totalPremium = 0.0,
+  });
 
-@freezed
-class CustomerStatsModel with _$CustomerStatsModel {
-  const factory CustomerStatsModel({
-    @Default(0) int totalInsurances,
-    @Default(0) int activeInsurances,
-    @Default(0) int pendingInsurances,
-    @Default(0) int expiredInsurances,
-    @Default(0) int totalClaims,
-    @Default(0) int pendingClaims,
-    @Default(0) int approvedClaims,
-    @Default(0) double totalPremium,
-  }) = _CustomerStatsModel;
+  factory CustomerStatsModel.fromJson(Map<String, dynamic> json) {
+    return CustomerStatsModel(
+      totalInsurances: _toInt(json['totalInsurances']),
+      activeInsurances: _toInt(json['activeInsurances']),
+      pendingInsurances: _toInt(json['pendingInsurances']),
+      expiredInsurances: _toInt(json['expiredInsurances']),
+      totalClaims: _toInt(json['totalClaims']),
+      pendingClaims: _toInt(json['pendingClaims']),
+      approvedClaims: _toInt(json['approvedClaims']),
+      totalPremium: _toDouble(json['totalPremium']),
+    );
+  }
 
-  factory CustomerStatsModel.fromJson(Map<String, dynamic> json) =>
-      _$CustomerStatsModelFromJson(json);
+  static int _toInt(dynamic v) =>
+      v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);
+
+  static double _toDouble(dynamic v) =>
+      v == null ? 0.0 : (v is double ? v : double.tryParse(v.toString()) ?? 0.0);
 }
