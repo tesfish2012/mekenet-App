@@ -1,5 +1,7 @@
-/// Thrown when the server returns a non-2xx response
-class ServerException implements Exception {
+import '../network/interceptors/error_interceptor.dart' show AppException;
+
+/// Server responded with a non-2xx status code
+class ServerException implements AppException {
   final String message;
   final int statusCode;
   final dynamic data;
@@ -14,8 +16,8 @@ class ServerException implements Exception {
   String toString() => 'ServerException($statusCode): $message';
 }
 
-/// Thrown when there is no network connectivity
-class NetworkException implements Exception {
+/// No network connectivity (DNS, socket, etc.)
+class NetworkException implements AppException {
   final String message;
   const NetworkException({this.message = 'No internet connection'});
 
@@ -23,8 +25,8 @@ class NetworkException implements Exception {
   String toString() => 'NetworkException: $message';
 }
 
-/// Thrown on 401 responses
-class UnauthorizedException implements Exception {
+/// 401 Unauthorized / token expired
+class UnauthorizedException implements AppException {
   final String message;
   const UnauthorizedException({this.message = 'Unauthorized'});
 
@@ -32,8 +34,8 @@ class UnauthorizedException implements Exception {
   String toString() => 'UnauthorizedException: $message';
 }
 
-/// Thrown when a request times out
-class TimeoutException implements Exception {
+/// Request timed out
+class TimeoutException implements AppException {
   final String message;
   const TimeoutException({this.message = 'Request timed out'});
 
@@ -41,8 +43,8 @@ class TimeoutException implements Exception {
   String toString() => 'TimeoutException: $message';
 }
 
-/// Thrown on local cache read/write errors
-class CacheException implements Exception {
+/// Local cache read/write error
+class CacheException implements AppException {
   final String message;
   const CacheException({this.message = 'Cache error'});
 

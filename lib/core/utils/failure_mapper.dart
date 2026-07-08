@@ -1,28 +1,49 @@
+import 'package:dio/dio.dart';
 import '../error/exceptions.dart';
 import '../error/failures.dart';
+import '../network/interceptors/error_interceptor.dart' show AppException;
 
-/// Converts raw exceptions into typed Failure objects
+/// Converts any raw exception into a typed [Failure].
+///
+/// When Dio wraps our [AppException] inside a [DioException], we unwrap it
+/// first so the correct Failure subtype is returned.
 Failure mapExceptionToFailure(Object e) {
-  if (e is UnauthorizedException) {
-    return UnauthorizedFailure(message: e.message);
-  } else if (e is NetworkException) {
-    return NetworkFailure(message: e.message);
-  } else if (e is TimeoutException) {
-    return TimeoutFailure(message: e.message);
-  } else if (e is ServerException) {
-    if (e.statusCode == 401) {
-      return UnauthorizedFailure(message: e.message);
-    }
-    if (e.statusCode == 404) {
-      return NotFoundFailure(message: e.message);
-    }
-    if (e.statusCode == 422) {
-      return ValidationFailure(message: e.message);
-    }
-    return ServerFailure(message: e.message, statusCode: e.statusCode);
-  } else if (e is CacheException) {
-    return CacheFailure(message: e.message);
-  } else {
-    return UnknownFailure(message: e.toString());
+  // Unwrap DioException — the real typed error is in .error
+  final cause = e is DioException ? (e.error ?? e) : e;
+
+  if (cause is UnauthorizedException) {
+    return UnauthorizedFailure(message: cause.message);
   }
+  if (cause is NetworkException) {
+    return NetworkFailure(message: cause.message);
+  }
+  if (cause is TimeoutException) {
+    return TimeoutFailure(message: cause.message);
+  }
+  if (cause is ServerException) {
+    if (cause.statusCode == 401) {
+      return UnauthorizedFailure(message: cause.message);
+    }
+    if (cause.statusCode == 404) {
+      return NotFoundFailure(message: cause.message);
+    }
+    if (cause.statusCode == 422) {
+      return ValidationFailure(message: cause.message);
+    }
+    return ServerFailure(message: cause.message, statusCode: cause.statusCode);
+  }
+  if (cause is CacheException) {
+    return CacheFailure(message: cause.message);
+  }
+  if (cause is AppException) {
+    return UnknownFailure(message: cause.toString());
+  }
+
+  // Plain DioException with no typed wrapper (e.g. cancel)
+  if (cause is DioException) {
+    final msg = cause.message ?? 'Network error (${cause.type.name})';
+    return NetworkFailure(message: msg);
+  }
+
+  return UnknownFailure(message: cause.toString());
 }

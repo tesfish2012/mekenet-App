@@ -3,7 +3,8 @@ import 'package:injectable/injectable.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import '../../error/exceptions.dart';
 
-/// Blocks requests when offline and queues them for later
+/// Blocks any outgoing request when the device is offline.
+/// Uses handler.reject() — never throw inside an interceptor.
 @lazySingleton
 class ConnectivityInterceptor extends Interceptor {
   final InternetConnection _internetConnection;
@@ -17,7 +18,14 @@ class ConnectivityInterceptor extends Interceptor {
   ) async {
     final hasConnection = await _internetConnection.hasInternetAccess;
     if (!hasConnection) {
-      throw NetworkException(message: 'No internet connection.');
+      return handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.connectionError,
+          error: const NetworkException(message: 'No internet connection.'),
+          message: 'No internet connection.',
+        ),
+      );
     }
     handler.next(options);
   }

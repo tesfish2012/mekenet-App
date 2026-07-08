@@ -1,7 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/injectable_config.dart';
-import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/storage/preferences_service.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -13,7 +16,7 @@ final authRepositoryProvider = Provider<AuthRepository>(
 
 // ── Auth State ────────────────────────────────────────────
 
-enum AuthStatus { loading, authenticated, unauthenticated }
+enum AuthStatus { initial, loading, authenticated, unauthenticated }
 
 class AuthState {
   final AuthStatus status;
@@ -25,6 +28,11 @@ class AuthState {
     this.user,
     this.errorMessage,
   });
+
+  const AuthState.initial()
+      : status = AuthStatus.initial,
+        user = null,
+        errorMessage = null;
 
   const AuthState.loading()
       : status = AuthStatus.loading,
@@ -41,8 +49,13 @@ class AuthState {
         user = null,
         errorMessage = msg;
 
+  bool get isInitial => status == AuthStatus.initial;
   bool get isLoading => status == AuthStatus.loading;
   bool get isAuthenticated => status == AuthStatus.authenticated;
+  bool get hasError => errorMessage != null;
+
+  @override
+  String toString() => 'AuthState($status, error: $errorMessage)';
 }
 
 // ── Auth Notifier ─────────────────────────────────────────
@@ -50,9 +63,9 @@ class AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
-    // Check stored session on startup
-    _checkSession();
-    return const AuthState.loading();
+    // Kick off session check asynchronously — start in initial state
+    Future.microtask(_checkSession);
+    return const AuthState.initial();
   }
 
   Future<void> _checkSession() async {
@@ -66,7 +79,10 @@ class AuthNotifier extends Notifier<AuthState> {
     );
   }
 
-  Future<bool> login({required String email, required String password}) async {
+  Future<bool> login({
+    required String email,
+    required String password,
+  }) async {
     state = const AuthState.loading();
     final repo = ref.read(authRepositoryProvider);
     final result = await repo.login(email: email, password: password);
@@ -114,14 +130,10 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState.unauthenticated();
   }
 
-  void clearError() {
-    if (state.errorMessage != null) {
-      state = const AuthState.unauthenticated();
-    }
-  }
+  void clearError() => state = const AuthState.unauthenticated();
 }
 
-/// Manually defined provider for AuthNotifier
+/// Manually defined provider — no code generation needed
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
   AuthNotifier.new,
 );
@@ -146,7 +158,7 @@ final pinEnabledProvider = FutureProvider<bool>((ref) async {
   return getIt<SecureStorageService>().hasPin();
 });
 
-// ── Theme & Language ─────────────────────────────────────
+// ── Theme & Language ──────────────────────────────────────
 
 final themeModeProvider = StateProvider<String>((ref) {
   return getIt<PreferencesService>().getThemeMode();

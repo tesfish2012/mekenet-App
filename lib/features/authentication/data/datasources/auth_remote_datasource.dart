@@ -17,42 +17,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<AuthResponseModel> login(LoginRequest request) async {
-    try {
-      final response = await _dio.post(
-        ApiEndpoints.login,
-        data: request.toJson(),
-      );
-      final data = response.data as Map<String, dynamic>;
-      // Backend wraps in { success, message, data }
-      final payload = data['data'] as Map<String, dynamic>? ?? data;
-      return AuthResponseModel.fromJson(payload);
-    } on DioException catch (e) {
-      _handleError(e);
-    }
+    final response = await _dio.post(
+      ApiEndpoints.login,
+      data: request.toJson(),
+    );
+    return _parseAuthResponse(response);
   }
 
   @override
   Future<AuthResponseModel> register(RegisterRequest request) async {
-    try {
-      final response = await _dio.post(
-        ApiEndpoints.register,
-        data: request.toJson(),
-      );
-      final data = response.data as Map<String, dynamic>;
-      final payload = data['data'] as Map<String, dynamic>? ?? data;
-      return AuthResponseModel.fromJson(payload);
-    } on DioException catch (e) {
-      _handleError(e);
-    }
+    final response = await _dio.post(
+      ApiEndpoints.register,
+      data: request.toJson(),
+    );
+    return _parseAuthResponse(response);
   }
 
-  Never _handleError(DioException e) {
-    final statusCode = e.response?.statusCode ?? 0;
-    final message = (e.response?.data as Map<String, dynamic>?)?['message'] as String? ??
-        e.message ??
-        'An error occurred';
+  /// Unwraps the backend envelope: { success, message, data: { ... } }
+  AuthResponseModel _parseAuthResponse(Response response) {
+    final body = response.data;
 
-    if (statusCode == 401) throw UnauthorizedException(message: message);
-    throw ServerException(message: message, statusCode: statusCode);
+    if (body is! Map<String, dynamic>) {
+      throw ServerException(
+        message: 'Unexpected response format from server.',
+        statusCode: response.statusCode ?? 0,
+      );
+    }
+
+    // Unwrap envelope if present, otherwise use the body directly
+    final payload = body['data'] is Map<String, dynamic>
+        ? body['data'] as Map<String, dynamic>
+        : body;
+
+    return AuthResponseModel.fromJson(payload);
   }
 }

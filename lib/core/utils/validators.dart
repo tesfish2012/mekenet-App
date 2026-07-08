@@ -4,14 +4,22 @@ class Validators {
 
   static String? email(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
-    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final regex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
     if (!regex.hasMatch(value)) return 'Enter a valid email address';
     return null;
   }
 
+  /// Login password — backend only requires @NotBlank (no length minimum).
+  /// Accepts any non-empty string, e.g. "123456".
+  static String? loginPassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    return null;
+  }
+
+  /// Registration password — backend enforces @Size(min = 8).
   static String? password(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';
-    if (value.length < 6) return 'Password must be at least 6 characters';
+    if (value.length < 8) return 'Password must be at least 8 characters';
     return null;
   }
 
@@ -27,7 +35,7 @@ class Validators {
   }
 
   static String? phone(String? value) {
-    if (value == null || value.isEmpty) return null; // Optional
+    if (value == null || value.isEmpty) return null; // optional field
     final regex = RegExp(r'^\+?[\d\s\-\(\)]{7,15}$');
     if (!regex.hasMatch(value)) return 'Enter a valid phone number';
     return null;
@@ -35,14 +43,18 @@ class Validators {
 
   static String? amount(String? value) {
     if (value == null || value.isEmpty) return 'Amount is required';
-    final amount = double.tryParse(value);
-    if (amount == null || amount <= 0) return 'Enter a valid amount';
+    final parsed = double.tryParse(value);
+    if (parsed == null || parsed <= 0) return 'Enter a valid amount';
     return null;
   }
 
   static String? minLength(String? value, int min, {String? fieldName}) {
-    if (value == null || value.isEmpty) return '${fieldName ?? 'This field'} is required';
-    if (value.length < min) return '${fieldName ?? 'This field'} must be at least $min characters';
+    if (value == null || value.isEmpty) {
+      return '${fieldName ?? 'This field'} is required';
+    }
+    if (value.length < min) {
+      return '${fieldName ?? 'This field'} must be at least $min characters';
+    }
     return null;
   }
 

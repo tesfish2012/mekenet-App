@@ -50,19 +50,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) => const NotFoundPage(),
     redirect: (context, state) {
       final location = state.matchedLocation;
-      final isLoading = authState.isLoading;
       final isAuthenticated = authState.isAuthenticated;
+      // During initial session check keep the splash visible
+      final isResolving = authState.isInitial || authState.isLoading;
 
       // Let splash handle its own redirect
       if (location == AppConstants.routeSplash) return null;
 
-      // Still checking auth
-      if (isLoading) return AppConstants.routeSplash;
+      // Still resolving stored session — hold on splash
+      if (isResolving) return AppConstants.routeSplash;
 
       // Public routes — accessible without auth
       final publicRoutes = [
         AppConstants.routeOnboarding,
         AppConstants.routeLogin,
+        '/register',
         AppConstants.routeForgotPassword,
         AppConstants.routeOtp,
         AppConstants.routePinLogin,

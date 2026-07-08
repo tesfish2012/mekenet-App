@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import '../../constants/app_constants.dart';
+import 'error_interceptor.dart' show AppException;
 
-/// Retries failed idempotent requests up to [AppConstants.maxRetries] times
+/// Retries failed idempotent GET requests on transient network errors.
+/// Only retries up to [AppConstants.maxRetries] times.
+/// Never retries on typed app exceptions (auth errors, server errors, etc.).
 class RetryInterceptor extends Interceptor {
   final Dio dio;
 
@@ -12,35 +15,36 @@ class RetryInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final requestOptions = err.requestOptions;
-    final method = requestOptions.method.toUpperCase();
+    final method = err.requestOptions.method.toUpperCase();
 
-    // Only retry GET requests on network/timeout errors
-    final shouldRetry = (method == 'GET') &&
+    // Only retry GET on pure network/timeout — never retry typed app errors
+    final isRetryable = method == 'GET' &&
+        err.error is! AppException &&
         (err.type == DioExceptionType.connectionTimeout ||
             err.type == DioExceptionType.receiveTimeout ||
             err.type == DioExceptionType.connectionError);
 
-    if (!shouldRetry) {
+    if (!isRetryable) {
       return handler.next(err);
     }
 
-    final attempts = requestOptions.extra['retryCount'] as int? ?? 0;
+    final attempts = err.requestOptions.extra['_retryCount'] as int? ?? 0;
     if (attempts >= AppConstants.maxRetries) {
       return handler.next(err);
     }
 
-    requestOptions.extra['retryCount'] = attempts + 1;
+    // Store incremented count on the options for the next attempt
+    err.requestOptions.extra['_retryCount'] = attempts + 1;
 
-    // Exponential backoff
-    await Future.delayed(
+    // Exponential back-off: 1s, 2s, 3s
+    await Future<void>.delayed(
       Duration(milliseconds: AppConstants.retryDelay * (attempts + 1)),
     );
 
     try {
-      final response = await dio.fetch(requestOptions);
+      final response = await dio.fetch(err.requestOptions);
       return handler.resolve(response);
-    } catch (e) {
+    } catch (_) {
       return handler.next(err);
     }
   }

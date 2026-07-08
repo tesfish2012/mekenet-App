@@ -119,7 +119,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 PasswordField(
                   label: 'auth.password'.tr(),
                   controller: _passwordCtrl,
-                  validator: Validators.password,
+                  validator: Validators.loginPassword,
                 ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
                 const SizedBox(height: 12),
 

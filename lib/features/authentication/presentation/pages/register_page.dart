@@ -36,6 +36,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _register() async {
+    // Re-validate so confirm-password cross-check runs fresh
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
@@ -46,23 +47,35 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
         );
 
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
       context.go(AppConstants.routeDashboard);
-    } else if (mounted) {
-      final error = ref.read(authNotifierProvider).errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Registration failed'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    } else {
+      // Read error from state immediately after the await
+      final errorMsg = ref.read(authNotifierProvider).errorMessage
+          ?? 'Registration failed. Please try again.';
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(authNotifierProvider).isLoading;
+    // Only watch isLoading to rebuild the button
+    final isLoading = ref.watch(
+      authNotifierProvider.select((s) => s.isLoading),
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text('auth.sign_up'.tr())),
@@ -85,6 +98,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: 32),
 
+                // Full Name
                 AppTextField(
                   label: 'auth.full_name'.tr(),
                   controller: _nameCtrl,
@@ -93,6 +107,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 16),
+
+                // Email
                 AppTextField(
                   label: 'auth.email'.tr(),
                   controller: _emailCtrl,
@@ -102,6 +118,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 16),
+
+                // Phone (optional)
                 AppTextField(
                   label: '${'auth.phone_number'.tr()} (${'common.optional'.tr()})',
                   controller: _phoneCtrl,
@@ -111,6 +129,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 16),
+
+                // Password — min 8 chars (matches backend @Size(min=8))
                 PasswordField(
                   label: 'auth.password'.tr(),
                   controller: _passwordCtrl,
@@ -118,11 +138,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 16),
-                PasswordField(
-                  label: 'auth.confirm_password'.tr(),
+
+                // Confirm password — listens to _passwordCtrl changes to
+                // re-validate cross-field match
+                _ConfirmPasswordField(
                   controller: _confirmCtrl,
-                  validator: (v) =>
-                      Validators.confirmPassword(v, _passwordCtrl.text),
+                  passwordController: _passwordCtrl,
                 ),
                 const SizedBox(height: 32),
 
@@ -159,10 +180,56 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Confirm-password field that reactively re-validates when the
+/// primary password field changes.
+class _ConfirmPasswordField extends StatefulWidget {
+  final TextEditingController controller;
+  final TextEditingController passwordController;
+
+  const _ConfirmPasswordField({
+    required this.controller,
+    required this.passwordController,
+  });
+
+  @override
+  State<_ConfirmPasswordField> createState() => _ConfirmPasswordFieldState();
+}
+
+class _ConfirmPasswordFieldState extends State<_ConfirmPasswordField> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger rebuild (re-validation hint) whenever password changes
+    widget.passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() => setState(() {});
+
+  @override
+  void dispose() {
+    widget.passwordController.removeListener(_onPasswordChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PasswordField(
+      label: 'auth.confirm_password'.tr(),
+      controller: widget.controller,
+      textInputAction: TextInputAction.done,
+      validator: (v) => Validators.confirmPassword(
+        v,
+        widget.passwordController.text,
       ),
     );
   }

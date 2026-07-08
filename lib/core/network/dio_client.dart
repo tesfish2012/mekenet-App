@@ -1,13 +1,19 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
 import 'interceptors/auth_interceptor.dart';
-import 'interceptors/error_interceptor.dart';
 import 'interceptors/connectivity_interceptor.dart';
+import 'interceptors/error_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
 import 'interceptors/retry_interceptor.dart';
 
-/// Creates and configures the Dio HTTP client with all interceptors
+/// Creates and configures the Dio HTTP client with all interceptors.
+///
+/// Interceptor order matters:
+///   1. LoggingInterceptor  — logs BEFORE anything modifies the request
+///   2. ConnectivityInterceptor — block offline requests early
+///   3. AuthInterceptor     — attach Bearer token
+///   4. ErrorInterceptor    — convert DioException → typed app exception
+///   5. RetryInterceptor    — retry eligible GET requests
 Dio createDio({
   required AuthInterceptor authInterceptor,
   required ConnectivityInterceptor connectivityInterceptor,
@@ -23,15 +29,19 @@ Dio createDio({
         'Accept': 'application/json',
       },
       responseType: ResponseType.json,
+      // Don't throw on non-2xx so ErrorInterceptor handles it cleanly
+      validateStatus: (status) => true,
     ),
   );
 
+  final loggingInterceptor = LoggingInterceptor();
+
   dio.interceptors.addAll([
-    connectivityInterceptor,
-    authInterceptor,
-    ErrorInterceptor(),
-    RetryInterceptor(dio: dio),
-    if (kDebugMode) LoggingInterceptor(),
+    loggingInterceptor,       // 1. always log — shows raw request & response
+    connectivityInterceptor,  // 2. block when offline
+    authInterceptor,          // 3. attach JWT
+    ErrorInterceptor(),       // 4. convert bad status → typed exception
+    RetryInterceptor(dio: dio), // 5. retry on transient failures
   ]);
 
   return dio;
