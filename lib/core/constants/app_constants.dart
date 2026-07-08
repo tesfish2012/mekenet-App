@@ -10,6 +10,9 @@ class AppConstants {
   // API Base URL — update for production
   static const String baseUrl = 'http://157.230.102.54:9050/api';
   static const String fileBaseUrl = 'http://157.230.102.54:9050';
+  // static const String baseUrl = 'http://10.189.191.68:9090/api';
+  // static const String fileBaseUrl = 'http://10.189.191.68:9090';
+  
 
   // Timeouts
   static const int connectTimeoutMs = 30000;
