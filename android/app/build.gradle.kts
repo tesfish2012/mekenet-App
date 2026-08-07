@@ -25,7 +25,7 @@ android {
         applicationId = "com.safeinsurance.safeinsurance_mobile"
         // flutter_local_notifications, local_auth, and several other plugins
         // require minSdk >= 21 (Android 5.0 Lollipop)
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
