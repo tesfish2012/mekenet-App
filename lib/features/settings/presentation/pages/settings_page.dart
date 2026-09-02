@@ -56,7 +56,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return;
       }
       final authenticated = await auth.authenticate(
-        localizedReason: 'Enable biometric login for SafeInsurance',
+        localizedReason: 'Enable biometric login for Mekenet Insurance',
       );
       if (!authenticated) return;
     }

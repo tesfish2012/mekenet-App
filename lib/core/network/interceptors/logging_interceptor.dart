@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 ///
 /// Uses dart:developer log() so output is structured and filterable.
 class LoggingInterceptor extends Interceptor {
-  static const String _tag = 'SafeInsurance.HTTP';
+  static const String _tag = 'Mekenet.HTTP';
 
   // ── Request ───────────────────────────────────────────────
 

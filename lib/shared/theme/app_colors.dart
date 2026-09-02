@@ -7,11 +7,11 @@ class AppColors {
   // ── Primary Brand ─────────────────────────────────────────
   static const Color primary = Color(0xFF0B2E8A);       // Primary Blue
   static const Color primaryDark = Color(0xFF081F66);   // Dark Blue
-  static const Color primaryLight = Color(0xFF1F5FD4);  // Secondary Blue
+  static const Color primaryLight = Color(0xFF393F5F);  // Secondary Blue
   static const Color primaryContainer = Color(0xFFDEE8FB);
 
   // ── Secondary ─────────────────────────────────────────────
-  static const Color secondary = Color(0xFF1F5FD4);     // Secondary Blue
+  static const Color secondary = Color(0xFF393F5F);     // Secondary Blue
   static const Color secondaryDark = Color(0xFF081F66);
   static const Color secondaryLight = Color(0xFF4F8FF7);
   static const Color secondaryContainer = Color(0xFFE0EAFF);
@@ -55,7 +55,7 @@ class AppColors {
   static const Color darkBackground = Color(0xFF081F66);  // Dark Blue
   static const Color darkSurface = Color(0xFF0B2E8A);     // Primary Blue
   static const Color darkCard = Color(0xFF0F3699);
-  static const Color darkBorder = Color(0xFF1F5FD4);
+  static const Color darkBorder = Color(0xFF393F5F);
   static const Color darkTextPrimary = Color(0xFFFFFFFF);
   static const Color darkTextSecondary = Color(0xFFB0C4F5);
   static const Color darkTextHint = Color(0xFF7A9DE0);
@@ -66,7 +66,7 @@ class AppColors {
   static const Color statusExpired = Color(0xFFEF4444);
   static const Color statusCancelled = Color(0xFF6B7280);
   static const Color statusNew = Color(0xFF4F8FF7);
-  static const Color statusReview = Color(0xFF1F5FD4);
+  static const Color statusReview = Color(0xFF393F5F);
 
   // ── Claim Status ──────────────────────────────────────────
   static const Color claimSubmitted = Color(0xFF4F8FF7);
@@ -78,7 +78,7 @@ class AppColors {
   // ── Gradients ─────────────────────────────────────────────
   static const List<Color> primaryGradient = [
     Color(0xFF0B2E8A),
-    Color(0xFF1F5FD4),
+    Color(0xFF393F5F),
   ];
 
   static const List<Color> darkGradient = [

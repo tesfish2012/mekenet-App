@@ -3,13 +3,13 @@ class AppConstants {
   AppConstants._();
 
   // App Info
-  static const String appName = 'SafeInsurance';
+  static const String appName = 'Mekenet Insurance';
   static const String appVersion = '1.0.0';
   static const String packageName = 'com.safeinsurance.mobile';
 
   // API Base URL — update for production
-  static const String baseUrl = 'http://157.230.102.54:9040/api';
-  static const String fileBaseUrl = 'http://157.230.102.54:9040';
+  static const String baseUrl = 'https://api.mekenet.et/api';
+  static const String fileBaseUrl = 'https://api.mekenet.et';
   // static const String baseUrl = 'http://10.189.191.68:9090/api';
   // static const String fileBaseUrl = 'http://10.189.191.68:9090';
   

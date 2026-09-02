@@ -9,6 +9,7 @@ import 'core/config/injectable_config.dart';
 import 'core/config/router.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/app_text_styles.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +59,7 @@ class SafeInsuranceApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    AppTextStyles.brightness = _resolveBrightness(themeMode);
 
     return ScreenUtilInit(
       designSize: const Size(390, 844), // iPhone 14 base
@@ -95,6 +97,18 @@ class SafeInsuranceApp extends ConsumerWidget {
       case 'dark': return ThemeMode.dark;
       case 'light': return ThemeMode.light;
       default: return ThemeMode.system;
+    }
+  }
+
+  Brightness _resolveBrightness(String mode) {
+    switch (_resolveThemeMode(mode)) {
+      case ThemeMode.dark:
+        return Brightness.dark;
+      case ThemeMode.light:
+        return Brightness.light;
+      case ThemeMode.system:
+        final platform = WidgetsBinding.instance.platformDispatcher;
+        return platform.platformBrightness;
     }
   }
 }

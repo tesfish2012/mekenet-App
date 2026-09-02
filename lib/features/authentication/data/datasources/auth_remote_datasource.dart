@@ -89,7 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     developer.log(
       buffer.toString(),
-      name: 'SafeInsurance.Auth',
+      name: 'Mekenet.Auth',
       level: 800, // INFO level
     );
   }
