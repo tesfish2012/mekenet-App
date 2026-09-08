@@ -66,6 +66,7 @@ class AppConstants {
   static const String routeSplash = '/';
   static const String routeOnboarding = '/onboarding';
   static const String routeLogin = '/login';
+  static const String routeRegister = '/register';
   static const String routeForgotPassword = '/forgot-password';
   static const String routeOtp = '/otp';
   static const String routeCreatePin = '/create-pin';

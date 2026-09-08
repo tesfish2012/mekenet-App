@@ -276,7 +276,7 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryLight,
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
             minimumSize: const Size(double.infinity, 52),
@@ -284,6 +284,25 @@ class AppTheme {
               borderRadius: BorderRadius.circular(12),
             ),
             textStyle: AppTextStyles.button,
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.secondaryLight,
+            minimumSize: const Size(double.infinity, 52),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            side: const BorderSide(color: AppColors.secondaryLight, width: 1.5),
+            textStyle: AppTextStyles.button,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.secondaryLight,
+            textStyle: AppTextStyles.button.copyWith(fontSize: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           ),
         ),
         dividerTheme: const DividerThemeData(

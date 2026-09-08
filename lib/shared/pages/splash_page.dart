@@ -44,16 +44,11 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.primary,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: AppColors.darkGradient,
-          ),
-        ),
+        color: AppColors.primary,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
