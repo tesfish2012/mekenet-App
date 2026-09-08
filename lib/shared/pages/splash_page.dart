@@ -59,15 +59,26 @@ class _SplashPageState extends ConsumerState<SplashPage> {
           children: [
             // Logo / Brand mark
             Container(
-              padding: const EdgeInsets.all(24),
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.shield_rounded,
-                size: 64,
                 color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  AppConstants.logoAsset,
+                  fit: BoxFit.contain,
+                ),
               ),
             )
                 .animate()
@@ -86,7 +97,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                 .slideY(begin: 0.3),
             const SizedBox(height: 8),
             Text(
-              'Your Insurance Partner',
+              AppConstants.appTagline,
               style: AppTextStyles.bodyLarge.copyWith(
                 color: Colors.white.withOpacity(0.7),
               ),

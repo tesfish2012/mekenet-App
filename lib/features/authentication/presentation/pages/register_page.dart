@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -87,14 +88,53 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Create your account',
-                  style: AppTextStyles.headlineMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Sign up to manage your insurance on the go.',
-                  style: AppTextStyles.bodyMedium,
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.1),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: AppColors.lightBorder,
+                            width: 1,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Image.asset(
+                            AppConstants.logoAsset,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      )
+                          .animate()
+                          .fadeIn()
+                          .scale(begin: const Offset(0.8, 0.8)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Create your account',
+                        style: AppTextStyles.headlineMedium,
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(delay: 100.ms),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Sign up to manage your insurance on the go.',
+                        style: AppTextStyles.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ).animate().fadeIn(delay: 200.ms),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
 

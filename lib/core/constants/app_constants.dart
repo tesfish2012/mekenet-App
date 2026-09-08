@@ -6,6 +6,8 @@ class AppConstants {
   static const String appName = 'Mekenet Insurance';
   static const String appVersion = '1.0.0';
   static const String packageName = 'com.safeinsurance.mobile';
+  static const String logoAsset = 'assets/images/logo.jpg';
+  static const String appTagline = 'Your Insurance Partner';
 
   // API Base URL — update for production
   static const String baseUrl = 'https://api.mekenet.et/api';

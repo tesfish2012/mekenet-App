@@ -74,17 +74,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        width: 88,
+                        height: 88,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: AppColors.primaryGradient,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.shield_rounded,
-                          size: 40,
                           color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.1),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: AppColors.lightBorder,
+                            width: 1,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Image.asset(
+                            AppConstants.logoAsset,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       )
                           .animate()
