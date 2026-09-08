@@ -9,6 +9,7 @@ class UserEntity extends Equatable {
   final String name;
   final String email;
   final int? companyId;
+  final String? message;
 
   const UserEntity({
     required this.accessToken,
@@ -18,6 +19,7 @@ class UserEntity extends Equatable {
     required this.name,
     required this.email,
     this.companyId,
+    this.message,
   });
 
   bool get isAdmin => role == 'ADMIN';
@@ -25,7 +27,7 @@ class UserEntity extends Equatable {
   bool get isCustomer => role == 'CUSTOMER';
 
   @override
-  List<Object?> get props => [email, role, accessToken];
+  List<Object?> get props => [email, role, accessToken, message];
 }
 
 /// Lightweight user profile stored locally

@@ -39,26 +39,37 @@ import '../constants/app_constants.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Listenable that only triggers when auth status flips between logged in / out,
+/// preventing the entire GoRouter and widget tree from being destroyed on loading state.
+class AuthRefreshNotifier extends ChangeNotifier {
+  AuthRefreshNotifier(Ref ref) {
+    ref.listen<bool>(
+      authNotifierProvider.select((s) => s.isAuthenticated),
+      (prev, next) {
+        if (prev != next) {
+          notifyListeners();
+        }
+      },
+    );
+  }
+}
+
 /// Router provider - manually defined (no code generation needed)
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authNotifierProvider);
+  final refreshNotifier = AuthRefreshNotifier(ref);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppConstants.routeSplash,
+    refreshListenable: refreshNotifier,
     debugLogDiagnostics: true,
     errorBuilder: (context, state) => const NotFoundPage(),
     redirect: (context, state) {
       final location = state.matchedLocation;
-      final isAuthenticated = authState.isAuthenticated;
-      // During initial session check keep the splash visible
-      final isResolving = authState.isInitial || authState.isLoading;
+      final isAuthenticated = ref.read(authNotifierProvider).isAuthenticated;
 
-      // Let splash handle its own redirect
+      // Let splash handle its own navigation
       if (location == AppConstants.routeSplash) return null;
-
-      // Still resolving stored session — hold on splash
-      if (isResolving) return AppConstants.routeSplash;
 
       // Public routes — accessible without auth
       final publicRoutes = [
@@ -76,7 +87,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (isAuthenticated && (location == AppConstants.routeLogin ||
-          location == AppConstants.routeOnboarding)) {
+          location == AppConstants.routeOnboarding ||
+          location == '/register')) {
         return AppConstants.routeDashboard;
       }
 

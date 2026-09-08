@@ -124,6 +124,7 @@ class PasswordField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final void Function(String)? onChanged;
+  final void Function(String)? onFieldSubmitted;
 
   const PasswordField({
     super.key,
@@ -132,6 +133,7 @@ class PasswordField extends StatelessWidget {
     this.validator,
     this.textInputAction = TextInputAction.done,
     this.onChanged,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -145,6 +147,7 @@ class PasswordField extends StatelessWidget {
       textInputAction: textInputAction,
       prefixIcon: Icons.lock_outline_rounded,
       onChanged: onChanged,
+      onFieldSubmitted: onFieldSubmitted,
     );
   }
 }

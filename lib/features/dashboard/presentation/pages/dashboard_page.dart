@@ -72,7 +72,12 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            // ── Brand Footer ─────────────────────────────
+            const SliverToBoxAdapter(
+              child: _DashboardBrandFooter(),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
           ],
         ),
       ),
@@ -384,6 +389,141 @@ class _NoticesSection extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Professional Brand Footer ─────────────────────────────
+
+class _DashboardBrandFooter extends StatelessWidget {
+  const _DashboardBrandFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: AppColors.primaryGradient,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(7),
+                child: Image.asset(
+                  AppConstants.logoAsset,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppConstants.appName,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      AppConstants.appTagline,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => context.push(AppConstants.routeSupport),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.headset_mic_rounded, size: 16),
+                label: const Text(
+                  'Support',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Divider(color: Colors.white.withOpacity(0.18), height: 1),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.verified_user_rounded,
+                    size: 15,
+                    color: Color(0xFF60A5FA),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Licensed & Secure Insurer',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                'v${AppConstants.appVersion} • © 2026',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.65),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -100,8 +100,36 @@ class ErrorInterceptor extends Interceptor {
   }
 
   String? _extractMessage(dynamic data) {
-    if (data is Map<String, dynamic>) {
-      return data['message'] as String?;
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      if (map['message'] is String && (map['message'] as String).trim().isNotEmpty) {
+        return (map['message'] as String).trim();
+      }
+      if (map['error'] is String && (map['error'] as String).trim().isNotEmpty) {
+        return (map['error'] as String).trim();
+      }
+      if (map['error_description'] is String &&
+          (map['error_description'] as String).trim().isNotEmpty) {
+        return (map['error_description'] as String).trim();
+      }
+      if (map['detail'] is String && (map['detail'] as String).trim().isNotEmpty) {
+        return (map['detail'] as String).trim();
+      }
+      if (map['msg'] is String && (map['msg'] as String).trim().isNotEmpty) {
+        return (map['msg'] as String).trim();
+      }
+      if (map['errors'] is List && (map['errors'] as List).isNotEmpty) {
+        return (map['errors'] as List).first.toString();
+      }
+      if (map['errors'] is Map && (map['errors'] as Map).isNotEmpty) {
+        final firstVal = (map['errors'] as Map).values.first;
+        if (firstVal is List && firstVal.isNotEmpty) {
+          return firstVal.first.toString();
+        }
+        return firstVal.toString();
+      }
+    } else if (data is String && data.trim().isNotEmpty) {
+      return data.trim();
     }
     return null;
   }

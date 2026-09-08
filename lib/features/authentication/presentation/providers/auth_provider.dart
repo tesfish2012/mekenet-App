@@ -21,32 +21,38 @@ class AuthState {
   final AuthStatus status;
   final UserEntity? user;
   final String? errorMessage;
+  final String? successMessage;
 
   const AuthState({
     required this.status,
     this.user,
     this.errorMessage,
+    this.successMessage,
   });
 
   const AuthState.initial()
       : status = AuthStatus.initial,
         user = null,
-        errorMessage = null;
+        errorMessage = null,
+        successMessage = null;
 
   const AuthState.loading()
       : status = AuthStatus.loading,
         user = null,
-        errorMessage = null;
+        errorMessage = null,
+        successMessage = null;
 
-  const AuthState.authenticated(UserEntity u)
+  AuthState.authenticated(UserEntity u, [String? msg])
       : status = AuthStatus.authenticated,
         user = u,
-        errorMessage = null;
+        errorMessage = null,
+        successMessage = msg ?? u.message;
 
   const AuthState.unauthenticated([String? msg])
       : status = AuthStatus.unauthenticated,
         user = null,
-        errorMessage = msg;
+        errorMessage = msg,
+        successMessage = null;
 
   bool get isInitial => status == AuthStatus.initial;
   bool get isLoading => status == AuthStatus.loading;
@@ -54,7 +60,8 @@ class AuthState {
   bool get hasError => errorMessage != null;
 
   @override
-  String toString() => 'AuthState($status, error: $errorMessage)';
+  String toString() =>
+      'AuthState($status, error: $errorMessage, success: $successMessage)';
 }
 
 // ── Auth Notifier ─────────────────────────────────────────
@@ -83,18 +90,25 @@ class AuthNotifier extends Notifier<AuthState> {
     required String password,
   }) async {
     state = const AuthState.loading();
-    final repo = ref.read(authRepositoryProvider);
-    final result = await repo.login(email: email, password: password);
-    return result.fold(
-      (failure) {
-        state = AuthState.unauthenticated(failure.message);
-        return false;
-      },
-      (user) {
-        state = AuthState.authenticated(user);
-        return true;
-      },
-    );
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final result = await repo.login(email: email, password: password);
+      return result.fold(
+        (failure) {
+          state = AuthState.unauthenticated(failure.message);
+          return false;
+        },
+        (user) {
+          state = AuthState.authenticated(user, user.message);
+          return true;
+        },
+      );
+    } catch (e) {
+      state = AuthState.unauthenticated(
+        e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
   }
 
   Future<bool> register({
@@ -104,23 +118,30 @@ class AuthNotifier extends Notifier<AuthState> {
     String? phone,
   }) async {
     state = const AuthState.loading();
-    final repo = ref.read(authRepositoryProvider);
-    final result = await repo.register(
-      name: name,
-      email: email,
-      password: password,
-      phone: phone,
-    );
-    return result.fold(
-      (failure) {
-        state = AuthState.unauthenticated(failure.message);
-        return false;
-      },
-      (user) {
-        state = AuthState.authenticated(user);
-        return true;
-      },
-    );
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final result = await repo.register(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+      );
+      return result.fold(
+        (failure) {
+          state = AuthState.unauthenticated(failure.message);
+          return false;
+        },
+        (user) {
+          state = AuthState.authenticated(user, user.message);
+          return true;
+        },
+      );
+    } catch (e) {
+      state = AuthState.unauthenticated(
+        e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
   }
 
   Future<void> logout() async {

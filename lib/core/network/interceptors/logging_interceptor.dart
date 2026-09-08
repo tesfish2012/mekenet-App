@@ -1,11 +1,11 @@
 import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Always-on HTTP logger — prints full request/response detail to the
-/// Flutter/Dart developer console (visible in VS Code / Android Studio).
-///
-/// Uses dart:developer log() so output is structured and filterable.
+/// Flutter/Dart developer console (visible in VS Code / Android Studio)
+/// and terminal stdout via debugPrint.
 class LoggingInterceptor extends Interceptor {
   static const String _tag = 'Mekenet.HTTP';
 
@@ -29,6 +29,7 @@ class LoggingInterceptor extends Interceptor {
     buffer.writeln('└─────────────────────────────────────────────────');
 
     developer.log(buffer.toString(), name: _tag, level: 500);
+    debugPrint(buffer.toString());
     handler.next(options);
   }
 
@@ -46,6 +47,7 @@ class LoggingInterceptor extends Interceptor {
       ..writeln('└─────────────────────────────────────────────────');
 
     developer.log(buffer.toString(), name: _tag, level: 800);
+    debugPrint(buffer.toString());
     handler.next(response);
   }
 
@@ -74,6 +76,7 @@ class LoggingInterceptor extends Interceptor {
     buffer.writeln('└─────────────────────────────────────────────────');
 
     developer.log(buffer.toString(), name: _tag, level: 1000, error: err.error);
+    debugPrint(buffer.toString());
     handler.next(err);
   }
 

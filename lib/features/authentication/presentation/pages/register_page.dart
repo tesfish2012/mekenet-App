@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -51,23 +52,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!mounted) return;
 
     if (success) {
+      final successMsg = ref.read(authNotifierProvider).successMessage ??
+          'Registration successful!';
+      context.showSuccessSnackBar(successMsg);
       context.go(AppConstants.routeDashboard);
     } else {
-      // Read error from state immediately after the await
-      final errorMsg = ref.read(authNotifierProvider).errorMessage
-          ?? 'Registration failed. Please try again.';
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+      final errorMsg = ref.read(authNotifierProvider).errorMessage ??
+          'Registration failed. Please try again.';
+      context.showErrorSnackBar(errorMsg);
     }
   }
 

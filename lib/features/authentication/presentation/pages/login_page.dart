@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -32,32 +33,53 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint('👉 [LOGIN] Sign In action triggered');
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('❌ [LOGIN] Validation failed on client side');
+      context.showErrorSnackBar('Please enter your email and password correctly.');
+      return;
+    }
     FocusScope.of(context).unfocus();
+    debugPrint('🌐 [LOGIN] Calling backend API with ${_emailCtrl.text.trim()} ...');
 
     final success = await ref.read(authNotifierProvider.notifier).login(
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
         );
 
-    if (success && mounted) {
-      context.go(AppConstants.routeDashboard);
-    } else if (mounted) {
-      final error = ref.read(authNotifierProvider).errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'auth.login'.tr()),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    debugPrint('📩 [LOGIN] API result: success=$success, mounted=$mounted');
+    if (!mounted) return;
+
+    if (success) {
+      final authState = ref.read(authNotifierProvider);
+      final successMsg =
+          (authState.successMessage != null && authState.successMessage!.isNotEmpty)
+              ? authState.successMessage!
+              : 'auth.login_success'.tr();
+      debugPrint('✅ [LOGIN] Showing success snackbar: $successMsg');
+      context.showSuccessSnackBar(successMsg);
+
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          context.go(AppConstants.routeDashboard);
+        }
+      });
+    } else {
+      final authState = ref.read(authNotifierProvider);
+      final errorMsg =
+          (authState.errorMessage != null && authState.errorMessage!.isNotEmpty)
+              ? authState.errorMessage!
+              : 'Authentication failed. Please check your credentials.';
+      debugPrint('❌ [LOGIN] Showing error snackbar: $errorMsg');
+      context.showErrorSnackBar(errorMsg);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authNotifierProvider);
-    final isLoading = authState.isLoading;
+    final isLoading = ref.watch(
+      authNotifierProvider.select((s) => s.isLoading),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.primary,
@@ -186,6 +208,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     label: 'auth.password'.tr(),
                     controller: _passwordCtrl,
                     validator: Validators.loginPassword,
+                    onFieldSubmitted: (_) => _login(),
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
                   const SizedBox(height: 14),
 

@@ -47,18 +47,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthResponseModel _parseAuthResponse(Response response) {
     final body = response.data;
 
-    if (body is! Map<String, dynamic>) {
+    if (body is! Map) {
       throw ServerException(
         message: 'Unexpected response format from server.',
         statusCode: response.statusCode ?? 0,
       );
     }
 
-    final payload = body['data'] is Map<String, dynamic>
-        ? body['data'] as Map<String, dynamic>
-        : body;
+    final map = Map<String, dynamic>.from(body);
 
-    return AuthResponseModel.fromJson(payload);
+    if (map['success'] == false) {
+      final msg = map['message'] as String? ??
+          map['error'] as String? ??
+          'Authentication failed';
+      throw ServerException(
+        message: msg,
+        statusCode: response.statusCode ?? 200,
+      );
+    }
+
+    final message = map['message'] as String?;
+    final payload = map['data'] is Map
+        ? Map<String, dynamic>.from(map['data'] as Map)
+        : map;
+
+    return AuthResponseModel.fromJson(payload, message: message);
   }
 
   // ── Structured logs ───────────────────────────────────────
