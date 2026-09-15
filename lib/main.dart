@@ -46,14 +46,14 @@ Future<void> main() async {
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
       child: const ProviderScope(
-        child: SafeInsuranceApp(),
+        child: MekenetinsuranceApp(),
       ),
     ),
   );
 }
 
-class SafeInsuranceApp extends ConsumerWidget {
-  const SafeInsuranceApp({super.key});
+class MekenetinsuranceApp extends ConsumerWidget {
+  const MekenetinsuranceApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,7 +67,7 @@ class SafeInsuranceApp extends ConsumerWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp.router(
-          title: 'SafeInsurance',
+          title: 'Mekenet Insurance',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,

@@ -1,6 +1,6 @@
 {
-    "name": "safeinsurance_mobile",
-    "short_name": "safeinsurance_mobile",
+    "name": "mekenetinsurance_mobile",
+    "short_name": "mekenetinsurance_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -4,7 +4,9 @@ import '../constants/app_constants.dart';
 import '../storage/secure_storage_service.dart';
 
 /// Handles access token renewal using the stored refresh token.
-/// NOTE: The SafeInsurance backend currently uses long-lived tokens.
+/// NOTE: The 
+/// 
+/// backend currently uses long-lived tokens.
 /// This service is a placeholder that clears tokens on 401.
 /// Update this when the backend exposes a /auth/refresh endpoint.
 @lazySingleton

@@ -69,7 +69,7 @@ class DigitalCardPage extends ConsumerWidget {
                           children: [
                             const Icon(Icons.shield_rounded, color: Colors.white, size: 36),
                             Text(
-                              'SafeInsurance',
+                              'Mekenet Insurance',
                               style: AppTextStyles.titleMedium.copyWith(
                                 color: Colors.white.withOpacity(0.9),
                               ),

@@ -1,4 +1,4 @@
-# SafeInsurance Mobile - Enterprise Flutter App
+# mekenetinsurance Mobile - Enterprise Flutter App
 
 Enterprise-grade insurance management mobile application built with Flutter, following Clean Architecture principles.
 
@@ -57,7 +57,7 @@ Enterprise-grade insurance management mobile application built with Flutter, fol
 
 1. **Clone the repository**
    ```bash
-   cd D:\ANT\Insurance\SafeInsurance-Mobile
+   cd D:\ANT\Insurance\mekenetinsurance-Mobile
    ```
 
 2. **Install dependencies**
@@ -240,7 +240,7 @@ dart run build_runner build --delete-conflicting-outputs
 
 ## 📝 Notes
 
-- **API Integration**: All endpoints match the SafeInsurance backend REST API
+- **API Integration**: All endpoints match the mekenetinsurance backend REST API
 - **Multi-tenancy**: The app respects tenant isolation via JWT
 - **Offline Support**: Hive caches responses; connectivity detection prevents offline requests
 - **Security**: Tokens stored in FlutterSecureStorage with encryption
@@ -248,12 +248,12 @@ dart run build_runner build --delete-conflicting-outputs
 
 ## 📄 License
 
-Proprietary - SafeInsurance Enterprise Application
+Proprietary - mekenetinsurance Enterprise Application
 
 ## 👥 Support
 
 For issues or questions:
-- Email: support@safeinsurance.com
+- Email: support@mekenetinsurance.com
 - Documentation: Check the `/documentation` folder in the backend project
 
 ---

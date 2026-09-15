@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:safeinsurance_mobile/core/error/exceptions.dart';
-import 'package:safeinsurance_mobile/core/error/failures.dart';
-import 'package:safeinsurance_mobile/core/utils/failure_mapper.dart';
+import 'package:mekenetinsurance_mobile/core/error/exceptions.dart';
+import 'package:mekenetinsurance_mobile/core/error/failures.dart';
+import 'package:mekenetinsurance_mobile/core/utils/failure_mapper.dart';
 
 void main() {
   group('Failure types', () {

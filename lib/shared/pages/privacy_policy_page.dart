@@ -17,7 +17,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           children: [
             Text('Privacy Policy', style: AppTextStyles.headlineMedium),
             const SizedBox(height: 4),
-            Text('Last updated: January 1, 2024', style: AppTextStyles.bodySmall),
+            Text('Last updated: September 01, 2026', style: AppTextStyles.bodySmall),
             const SizedBox(height: 24),
             ..._sections.map(
               (s) => Padding(
@@ -66,7 +66,7 @@ class PrivacyPolicyPage extends StatelessWidget {
     ),
     _Section(
       'Contact Us',
-      'If you have questions about this Privacy Policy, please contact us at privacy@safeinsurance.com.',
+      'If you have questions about this Privacy Policy, please contact us at privacy@mekenet.et.',
     ),
   ];
 }

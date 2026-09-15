@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.safeinsurance" "\0"
-            VALUE "FileDescription", "safeinsurance_mobile" "\0"
+            VALUE "CompanyName", "com.mekenetinsurance" "\0"
+            VALUE "FileDescription", "mekenetinsurance_mobile" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "safeinsurance_mobile" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.safeinsurance. All rights reserved." "\0"
-            VALUE "OriginalFilename", "safeinsurance_mobile.exe" "\0"
-            VALUE "ProductName", "safeinsurance_mobile" "\0"
+            VALUE "InternalName", "mekenetinsurance_mobile" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.mekenetinsurance. All rights reserved." "\0"
+            VALUE "OriginalFilename", "mekenetinsurance_mobile.exe" "\0"
+            VALUE "ProductName", "mekenetinsurance_mobile" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

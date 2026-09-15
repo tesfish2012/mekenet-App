@@ -1,4 +1,4 @@
-# SafeInsurance Mobile - Complete Project Structure
+# mekenetinsurance Mobile - Complete Project Structure
 
 ## ✅ Deliverables Summary
 
@@ -9,7 +9,7 @@ This enterprise Flutter mobile application has been fully implemented with all r
 - **Features Implemented**: 10 major feature modules
 - **Pages**: 30+ screens
 - **Reusable Widgets**: 20+ components
-- **API Endpoints**: Full integration with SafeInsurance backend
+- **API Endpoints**: Full integration with mekenetinsurance backend
 - **Languages**: English + Amharic (አማርኛ)
 - **Themes**: Light + Dark mode
 - **Tests**: Unit tests for core utilities
@@ -386,7 +386,7 @@ test/
 
 ### 1. Code Generation
 ```bash
-cd D:\ANT\Insurance\SafeInsurance-Mobile
+cd D:\ANT\Insurance\mekenetinsurance-Mobile
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
@@ -619,7 +619,7 @@ All 60+ packages from specification are included in pubspec.yaml
 
 ## 🎉 Project Complete!
 
-The SafeInsurance Mobile application is a **production-ready, enterprise-grade Flutter app** implementing:
+The mekenetinsurance Mobile application is a **production-ready, enterprise-grade Flutter app** implementing:
 - Clean Architecture
 - Riverpod state management
 - Full backend API integration

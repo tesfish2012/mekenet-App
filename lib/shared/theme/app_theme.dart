@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
-/// Material 3 light & dark themes for SafeInsurance
+/// Material 3 light & dark themes for Mekenet Insurance
 class AppTheme {
   AppTheme._();
 
@@ -15,11 +15,15 @@ class AppTheme {
           onPrimary: Colors.white,
           primaryContainer: AppColors.primaryContainer,
           onPrimaryContainer: AppColors.primaryDark,
-          secondary: AppColors.secondary,
+          secondary: AppColors.accent,             // Gold as secondary
           onSecondary: Colors.white,
-          secondaryContainer: AppColors.secondaryContainer,
+          secondaryContainer: AppColors.accentContainer,
+          onSecondaryContainer: AppColors.accentDark,
+          tertiary: AppColors.secondary,           // Navy as tertiary
+          onTertiary: Colors.white,
           surface: AppColors.lightSurface,
           onSurface: AppColors.lightTextPrimary,
+          surfaceVariant: AppColors.lightBackground,
           background: AppColors.lightBackground,
           onBackground: AppColors.lightTextPrimary,
           error: AppColors.error,
@@ -209,13 +213,17 @@ class AppTheme {
         colorScheme: const ColorScheme.dark(
           primary: AppColors.primaryLight,
           onPrimary: Colors.white,
-          primaryContainer: Color(0xFF1A3A6B),
+          primaryContainer: Color(0xFF1E3A8A),
           onPrimaryContainer: AppColors.primaryLight,
-          secondary: AppColors.secondary,
-          onSecondary: Colors.white,
-          secondaryContainer: Color(0xFF0C3A52),
+          secondary: AppColors.accent,             // Gold as secondary
+          onSecondary: AppColors.secondary,
+          secondaryContainer: Color(0xFF3D2A00),
+          onSecondaryContainer: AppColors.accentLight,
+          tertiary: AppColors.primaryLight,
+          onTertiary: Colors.white,
           surface: AppColors.darkSurface,
           onSurface: AppColors.darkTextPrimary,
+          surfaceVariant: AppColors.darkCard,
           background: AppColors.darkBackground,
           onBackground: AppColors.darkTextPrimary,
           error: AppColors.error,

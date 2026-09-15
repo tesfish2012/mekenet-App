@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.safeinsurance.safeinsurance_mobile"
+    namespace = "com.mekenetinsurance.mekenetinsurance_mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.safeinsurance.safeinsurance_mobile"
+        applicationId = "com.mekenetinsurance.mekenetinsurance_mobile"
         // flutter_local_notifications, local_auth, and several other plugins
         // require minSdk >= 21 (Android 5.0 Lollipop)
         minSdk = flutter.minSdkVersion

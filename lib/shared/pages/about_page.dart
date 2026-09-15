@@ -32,7 +32,7 @@ class AboutPage extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'SafeInsurance',
+              'Mekenet Insurance',
               style: AppTextStyles.displayMedium,
             ),
             const SizedBox(height: 6),
@@ -54,7 +54,7 @@ class AboutPage extends ConsumerWidget {
                   Text('About the App', style: AppTextStyles.titleMedium),
                   const SizedBox(height: 8),
                   Text(
-                    'SafeInsurance is an enterprise-grade mobile application that brings '
+                    'Mekenet Insurance is an enterprise-grade mobile application that brings '
                     'all your insurance needs to your fingertips. Manage policies, file '
                     'claims, track payments, and access your digital insurance card — '
                     'all from one secure app.',
@@ -72,29 +72,29 @@ class AboutPage extends ConsumerWidget {
                   _AboutTile(
                     icon: Icons.email_outlined,
                     label: 'Contact',
-                    value: 'support@safeinsurance.com',
-                    onTap: () => _launch('mailto:support@safeinsurance.com'),
+                    value: 'support@mekenet.et',
+                    onTap: () => _launch('mailto:support@mekenet.et'),
                   ),
                   const Divider(height: 1, indent: 56),
                   _AboutTile(
                     icon: Icons.language_rounded,
                     label: 'Website',
-                    value: 'www.safeinsurance.com',
-                    onTap: () => _launch('https://safeinsurance.com'),
+                    value: 'www.mekenet.et',
+                    onTap: () => _launch('https://mekenet.et'),
                   ),
                   const Divider(height: 1, indent: 56),
                   _AboutTile(
                     icon: Icons.phone_rounded,
                     label: 'Hotline',
-                    value: '+251 911 000 000',
-                    onTap: () => _launch('tel:+251911000000'),
+                    value: '+251 978 003 912',
+                    onTap: () => _launch('tel:+251978003912'),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 32),
             Text(
-              '© 2024 SafeInsurance. All rights reserved.',
+              '© 2026 Mekenet Insurance. All rights reserved.',
               style: AppTextStyles.caption,
               textAlign: TextAlign.center,
             ),

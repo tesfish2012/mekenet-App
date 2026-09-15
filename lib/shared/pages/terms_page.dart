@@ -17,7 +17,7 @@ class TermsPage extends StatelessWidget {
           children: [
             Text('Terms of Service', style: AppTextStyles.headlineMedium),
             const SizedBox(height: 4),
-            Text('Effective: January 1, 2024', style: AppTextStyles.bodySmall),
+            Text('Effective: September 01, 2026', style: AppTextStyles.bodySmall),
             const SizedBox(height: 24),
             ..._sections.map(
               (s) => Padding(
@@ -46,11 +46,11 @@ class TermsPage extends StatelessWidget {
   static const _sections = [
     _Section(
       'Acceptance of Terms',
-      'By using SafeInsurance, you agree to these Terms of Service. If you do not agree, please do not use the application.',
+      'By using Mekenet Insurance, you agree to these Terms of Service. If you do not agree, please do not use the application.',
     ),
     _Section(
       'Use of Service',
-      'SafeInsurance is an insurance management platform. You agree to use the service only for lawful purposes and in accordance with these terms.',
+      'Mekenet Insurance is an insurance management platform. You agree to use the service only for lawful purposes and in accordance with these terms.',
     ),
     _Section(
       'Account Responsibility',
@@ -58,15 +58,15 @@ class TermsPage extends StatelessWidget {
     ),
     _Section(
       'Insurance Policies',
-      'Insurance policies are subject to their own terms and conditions. SafeInsurance facilitates policy management but is not the insurer.',
+      'Insurance policies are subject to their own terms and conditions. Mekenet Insurance facilitates policy management but is not the insurer.',
     ),
     _Section(
       'Claims Processing',
-      'Claim submissions are reviewed by the insurance company. SafeInsurance facilitates submission but does not guarantee approval.',
+      'Claim submissions are reviewed by the insurance company. Mekenet Insurance facilitates submission but does not guarantee approval.',
     ),
     _Section(
       'Limitation of Liability',
-      'SafeInsurance is not liable for any indirect, incidental, or consequential damages arising from the use of this application.',
+      'Mekenet Insurance is not liable for any indirect, incidental, or consequential damages arising from the use of this application.',
     ),
     _Section(
       'Termination',
