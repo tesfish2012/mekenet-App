@@ -17,6 +17,8 @@ class PolicyModel {
   final double agentCommissionPercent;
   final String? termsConditions;
   final bool active;
+  /// Pricing tiers from API: [{termsDuration, months, price}, ...]
+  final List<Map<String, dynamic>> pricing;
 
   const PolicyModel({
     required this.id,
@@ -36,9 +38,19 @@ class PolicyModel {
     this.agentCommissionPercent = 0.0,
     this.termsConditions,
     this.active = true,
+    this.pricing = const [],
   });
 
   factory PolicyModel.fromJson(Map<String, dynamic> json) {
+    // Parse pricing tiers safely
+    final rawPricing = json['pricing'];
+    final List<Map<String, dynamic>> pricingList = rawPricing is List
+        ? rawPricing
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList()
+        : [];
+
     return PolicyModel(
       id: _toInt(json['id']),
       code: json['code'] as String? ?? '',
@@ -58,6 +70,7 @@ class PolicyModel {
       agentCommissionPercent: _toDouble(json['agentCommissionPercent']),
       termsConditions: json['termsConditions'] as String?,
       active: json['active'] as bool? ?? true,
+      pricing: pricingList,
     );
   }
 

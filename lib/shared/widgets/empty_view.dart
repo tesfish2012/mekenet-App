@@ -32,22 +32,30 @@ class EmptyView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: AppColors.primaryGradient,
+                ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 48, color: AppColors.primary),
+              child: Icon(icon, size: 48, color: Colors.white),
             ),
             const SizedBox(height: 24),
             Text(
               title,
-              style: AppTextStyles.headlineSmall,
+              style: AppTextStyles.headlineSmall.copyWith(
+                color: AppColors.lightTextPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: AppTextStyles.bodyMedium,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.lightTextSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -100,13 +108,17 @@ class ErrorView extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'common.error'.tr(),
-              style: AppTextStyles.headlineSmall,
+              style: AppTextStyles.headlineSmall.copyWith(
+                color: AppColors.lightTextPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.lightTextSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[

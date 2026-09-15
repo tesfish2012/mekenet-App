@@ -19,6 +19,8 @@ import '../../features/payments/presentation/pages/payments_page.dart';
 import '../../features/payments/presentation/pages/payment_detail_page.dart';
 import '../../features/policies/presentation/pages/policies_page.dart';
 import '../../features/policies/presentation/pages/policy_detail_page.dart';
+import '../../features/policies/presentation/pages/browse_policy_detail_page.dart';
+import '../../features/policies/presentation/pages/apply_policy_page.dart';
 import '../../features/policies/presentation/pages/browse_policies_page.dart';
 import '../../features/policies/presentation/pages/digital_card_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -203,6 +205,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/policies/browse',
         name: 'browse-policies',
         builder: (context, state) => const BrowsePoliciesPage(),
+      ),
+      GoRoute(
+        path: '/policies/browse/:id',
+        name: 'browse-policy-detail',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          return BrowsePolicyDetailPage(policyId: id);
+        },
+      ),
+      GoRoute(
+        path: '/policies/apply/:id',
+        name: 'apply-policy',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final pricingIndex = int.tryParse(
+                state.uri.queryParameters['pricingIndex'] ?? '');
+          return ApplyPolicyPage(
+            policyId: id,
+            selectedPricingIndex: pricingIndex,
+          );
+        },
       ),
       GoRoute(
         path: '/policies/:id',

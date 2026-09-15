@@ -137,7 +137,7 @@ class _SupportPageState extends ConsumerState<SupportPage> {
                     const SizedBox(height: 14),
                     AppTextField(
                       label:
-                          '${AppConstants.appName} Phone (${' common.optional'.tr()})',
+                          '${AppConstants.appName} Phone (${'common.optional'.tr()})',
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
                       prefixIcon: Icons.phone_outlined,
