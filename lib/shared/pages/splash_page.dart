@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/config/injectable_config.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/services/app_update_service.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../theme/app_colors.dart';
@@ -24,6 +25,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   Future<void> _navigate() async {
+    // Check for a mandatory update from Play Store before doing anything
+    await AppUpdateService.checkForUpdate(context, flexible: false);
+
     await Future.delayed(
       const Duration(milliseconds: AppConstants.splashDuration),
     );
@@ -44,72 +48,88 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.accent,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: AppColors.primary,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: AppColors.accentGradient,
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo / Brand mark
+            const Spacer(flex: 2),
+
+            // Logo – large circle with white bg, no clipping
             Container(
-              width: 120,
-              height: 120,
+              width: 180,
+              height: 180,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    color: AppColors.primary.withOpacity(0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              clipBehavior: Clip.antiAlias,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  AppConstants.logoAsset,
-                  fit: BoxFit.contain,
-                ),
+              padding: const EdgeInsets.all(28),
+              child: Image.asset(
+                AppConstants.logoAsset,
+                fit: BoxFit.contain,
               ),
             )
                 .animate()
                 .fadeIn(duration: 600.ms)
-                .scale(begin: const Offset(0.5, 0.5)),
-            const SizedBox(height: 24),
+                .scale(begin: const Offset(0.7, 0.7)),
+
+            const SizedBox(height: 28),
+
+            // App name in brand navy
             Text(
               AppConstants.appName,
               style: AppTextStyles.displayMedium.copyWith(
-                color: Colors.white,
+                color: AppColors.primary,
                 fontWeight: FontWeight.w700,
               ),
             )
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 600.ms)
                 .slideY(begin: 0.3),
+
             const SizedBox(height: 8),
+
+            // Tagline
             Text(
               AppConstants.appTagline,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: Colors.white.withOpacity(0.7),
+                color: AppColors.primary.withOpacity(0.7),
               ),
             )
                 .animate()
                 .fadeIn(delay: 500.ms, duration: 600.ms),
-            const SizedBox(height: 80),
+
+            const Spacer(flex: 2),
+
+            // Loading indicator in brand navy
             SizedBox(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
+                strokeWidth: 2.5,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withOpacity(0.6),
+                  AppColors.primary.withOpacity(0.7),
                 ),
               ),
             ).animate().fadeIn(delay: 800.ms),
+
+            const SizedBox(height: 48),
           ],
         ),
       ),

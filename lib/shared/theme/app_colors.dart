@@ -5,17 +5,17 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // ── Primary Brand (Royal Blue) ────────────────────────────
-  static const Color primary = Color(0xFF2B5CE6);        // Royal Blue – main CTA, active cards
-  static const Color primaryDark = Color(0xFF1A3FC7);    // Deeper blue – pressed states
-  static const Color primaryLight = Color(0xFF5B82F0);   // Lighter blue – icons on dark bg
-  static const Color primaryContainer = Color(0xFFDDE8FF); // Soft blue – chip/container bg
+  // ── Primary Brand (Logo Navy Blue) ───────────────────────
+  static const Color primary = Color(0xFF0F1F5C);        // Logo Navy – main CTA, active cards
+  static const Color primaryDark = Color(0xFF091547);    // Deeper navy – pressed states
+  static const Color primaryLight = Color(0xFF2D4494);   // Lighter navy – icons on dark bg
+  static const Color primaryContainer = Color(0xFFDDE3F5); // Soft navy tint – chip/container bg
 
   // ── Secondary (Navy) ──────────────────────────────────────
-  static const Color secondary = Color(0xFF0B1629);      // Deep Navy – scaffold background
-  static const Color secondaryDark = Color(0xFF060D1A);  // Darkest Navy – bottom sheet bg
-  static const Color secondaryLight = Color(0xFF1A2D4F); // Mid Navy – surface on dark
-  static const Color secondaryContainer = Color(0xFFE8EDF8);
+  static const Color secondary = Color(0xFF0F1F5C);      // Same as primary – scaffold background
+  static const Color secondaryDark = Color(0xFF091547);  // Slightly deeper navy
+  static const Color secondaryLight = Color(0xFF1A3280); // Lighter navy – surface on dark
+  static const Color secondaryContainer = Color(0xFFDDE3F5);
 
   // ── Gold Accent ───────────────────────────────────────────
   static const Color accent = Color(0xFFF5A623);         // Gold – badges, highlights, icons
@@ -30,8 +30,8 @@ class AppColors {
   static const Color warningLight = Color(0xFFFFF3D6);
   static const Color error = Color(0xFFEF4444);
   static const Color errorLight = Color(0xFFFEE2E2);
-  static const Color info = Color(0xFF2B5CE6);
-  static const Color infoLight = Color(0xFFDDE8FF);
+  static const Color info = Color(0xFF0F1F5C);
+  static const Color infoLight = Color(0xFFDDE3F5);
 
   // ── Neutrals ─────────────────────────────────────────────
   static const Color grey50 = Color(0xFFF9FAFB);
@@ -54,11 +54,11 @@ class AppColors {
   static const Color lightTextSecondary = Color(0xFF4A5568);
   static const Color lightTextHint = Color(0xFF9CA3AF);
 
-  // ── Dark Theme (matches navy mockup bg) ───────────────────
-  static const Color darkBackground = Color(0xFF0B1629);   // Deep Navy
-  static const Color darkSurface = Color(0xFF1A2D4F);      // Mid Navy surface
-  static const Color darkCard = Color(0xFF1E3461);          // Card on dark bg
-  static const Color darkBorder = Color(0xFF2A3F6F);
+  // ── Dark Theme (matches logo navy) ───────────────────────
+  static const Color darkBackground = Color(0xFF0F1F5C);   // Logo Navy
+  static const Color darkSurface = Color(0xFF1A3280);      // Lighter navy surface
+  static const Color darkCard = Color(0xFF1E3A8A);          // Card on dark bg
+  static const Color darkBorder = Color(0xFF2D4494);
   static const Color darkTextPrimary = Color(0xFFFFFFFF);
   static const Color darkTextSecondary = Color(0xFFB0C1E0);
   static const Color darkTextHint = Color(0xFF6B82A8);
@@ -68,33 +68,33 @@ class AppColors {
   static const Color statusPending = Color(0xFFF5A623);
   static const Color statusExpired = Color(0xFFEF4444);
   static const Color statusCancelled = Color(0xFF6B7280);
-  static const Color statusNew = Color(0xFF2B5CE6);
+  static const Color statusNew = Color(0xFF0F1F5C);
   static const Color statusReview = Color(0xFFF5A623);
 
   // ── Claim Status ──────────────────────────────────────────
-  static const Color claimSubmitted = Color(0xFF2B5CE6);
+  static const Color claimSubmitted = Color(0xFF0F1F5C);
   static const Color claimUnderReview = Color(0xFFF5A623);
   static const Color claimApproved = Color(0xFF10B981);
   static const Color claimRejected = Color(0xFFEF4444);
   static const Color claimPaid = Color(0xFF059669);
 
   // ── Gradients ─────────────────────────────────────────────
-  /// Royal blue gradient – primary cards, hero sections
+  /// Logo navy gradient – primary cards, hero sections
   static const List<Color> primaryGradient = [
-    Color(0xFF1A3FC7),
-    Color(0xFF2B5CE6),
+    Color(0xFF0F1F5C),
+    Color(0xFF1A3280),
   ];
 
   /// Deep navy gradient – scaffold header, dark backgrounds
   static const List<Color> darkGradient = [
-    Color(0xFF060D1A),
-    Color(0xFF0B1629),
+    Color(0xFF0F1F5C),
+    Color(0xFF1A3280),
   ];
 
-  /// Blue card gradient – policy/insurance card widget
+  /// Navy card gradient – policy/insurance card widget
   static const List<Color> cardGradient = [
-    Color(0xFF2B5CE6),
-    Color(0xFF5B82F0),
+    Color(0xFF0F1F5C),
+    Color(0xFF2D4494),
   ];
 
   /// Gold accent gradient – badges, highlights
