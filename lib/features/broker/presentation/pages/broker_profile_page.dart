@@ -12,6 +12,7 @@ import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/empty_view.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/status_chip.dart';
+import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../data/models/broker_models.dart';
 import '../providers/broker_providers.dart';
 import '_broker_shared.dart';
@@ -517,6 +518,8 @@ class _DetailsTabState extends ConsumerState<_DetailsTab> {
       await ref.read(authNotifierProvider.notifier).logout();
     }
   }
+
+  String _fieldLabel(String key) => switch (key) {
         'phone' => 'Phone',
         'website' => 'Website',
         'address' => 'Address',
