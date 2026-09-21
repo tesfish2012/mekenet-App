@@ -36,6 +36,48 @@ class RegisterRequest {
       };
 }
 
+class BrokerRegisterRequest {
+  final String name;
+  final String email;
+  final String password;
+  final String phone;
+  final String companyName;
+  final String licenseNumber;
+  final String licenseExpiry; // YYYY-MM-DD
+  final String city;
+  final String country;
+  final String? website;
+  final String? notes;
+
+  const BrokerRegisterRequest({
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.phone,
+    required this.companyName,
+    required this.licenseNumber,
+    required this.licenseExpiry,
+    required this.city,
+    required this.country,
+    this.website,
+    this.notes,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'companyName': companyName,
+        'licenseNumber': licenseNumber,
+        'licenseExpiry': licenseExpiry,
+        'city': city,
+        'country': country,
+        if (website != null && website!.isNotEmpty) 'website': website,
+        if (notes != null && notes!.isNotEmpty) 'notes': notes,
+      };
+}
+
 class AuthResponseModel {
   final String accessToken;
   final String refreshToken;

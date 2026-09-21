@@ -364,7 +364,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ],
                     ),
                   ).animate().fadeIn(delay: 800.ms),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),

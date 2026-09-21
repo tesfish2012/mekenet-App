@@ -1,4 +1,5 @@
 import '../../../../core/utils/result.dart';
+import '../../data/models/auth_model.dart';
 import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
@@ -13,6 +14,8 @@ abstract class AuthRepository {
     required String password,
     String? phone,
   });
+
+  Future<Result<String>> registerBroker(BrokerRegisterRequest request);
 
   Future<Result<void>> logout();
 

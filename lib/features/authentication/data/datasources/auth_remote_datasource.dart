@@ -9,6 +9,7 @@ import '../models/auth_model.dart';
 abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginRequest request);
   Future<AuthResponseModel> register(RegisterRequest request);
+  Future<String> registerBroker(BrokerRegisterRequest request);
 }
 
 @LazySingleton(as: AuthRemoteDataSource)
@@ -39,6 +40,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final model = _parseAuthResponse(response);
     _logRegisterResponse(response, model);
     return model;
+  }
+
+  @override
+  Future<String> registerBroker(BrokerRegisterRequest request) async {
+    final response = await _dio.post(
+      ApiEndpoints.brokerRegister,
+      data: request.toJson(),
+    );
+
+    final body = response.data;
+    if (body is! Map) {
+      return 'Broker registration submitted successfully.';
+    }
+    final map = Map<String, dynamic>.from(body);
+    if (map['success'] == false) {
+      final msg = map['message'] as String? ??
+          map['error'] as String? ??
+          'Broker registration failed';
+      throw ServerException(
+        message: msg,
+        statusCode: response.statusCode ?? 200,
+      );
+    }
+    return map['message'] as String? ?? 'Broker registration submitted successfully.';
   }
 
   // ── Response parsing ──────────────────────────────────────

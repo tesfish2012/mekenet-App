@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../../../features/broker/presentation/pages/broker_dashboard_page.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_card.dart';
@@ -21,13 +22,27 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
-    final statsAsync = ref.watch(customerStatsProvider);
+
+    // Broker users get their dedicated portal dashboard
+    if (user?.isBroker == true) {
+      return const BrokerDashboardPage();
+    }
+
+    final isAgentOrBroker = user?.isAgentOrBroker ?? false;
+    final customerStatsAsync =
+        isAgentOrBroker ? null : ref.watch(customerStatsProvider);
+    final agentStatsAsync =
+        isAgentOrBroker ? ref.watch(agentStatsProvider) : null;
     final noticesAsync = ref.watch(latestNoticesProvider);
 
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(customerStatsProvider);
+          if (isAgentOrBroker) {
+            ref.invalidate(agentStatsProvider);
+          } else {
+            ref.invalidate(customerStatsProvider);
+          }
           ref.invalidate(latestNoticesProvider);
         },
         color: AppColors.primary,
@@ -38,27 +53,42 @@ class DashboardPage extends ConsumerWidget {
 
             // ── App Bar / Header ──────────────────────────
             SliverToBoxAdapter(
-              child: _DashboardHeader(userName: user?.name ?? ''),
+              child: _DashboardHeader(user: user),
             ),
 
             // ── Stats Cards ───────────────────────────────
             SliverToBoxAdapter(
-              child: statsAsync.when(
-                data: (stats) => _StatsGrid(stats: stats),
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: LoadingView(),
-                ),
-                error: (e, _) => Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(e.toString()),
-                ),
-              ),
+              child: isAgentOrBroker
+                  ? agentStatsAsync!.when(
+                      data: (stats) => _AgentBrokerStatsGrid(
+                        stats: stats,
+                        isBroker: user?.isBroker ?? false,
+                      ),
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: LoadingView(),
+                      ),
+                      error: (e, _) => Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(e.toString()),
+                      ),
+                    )
+                  : customerStatsAsync!.when(
+                      data: (stats) => _StatsGrid(stats: stats),
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: LoadingView(),
+                      ),
+                      error: (e, _) => Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(e.toString()),
+                      ),
+                    ),
             ),
 
             // ── Quick Actions ─────────────────────────────
             SliverToBoxAdapter(
-              child: _QuickActions(),
+              child: _QuickActions(isAgentOrBroker: isAgentOrBroker),
             ),
 
             // ── Notices / News ────────────────────────────
@@ -88,9 +118,9 @@ class DashboardPage extends ConsumerWidget {
 // ── Header ────────────────────────────────────────────────
 
 class _DashboardHeader extends StatelessWidget {
-  final String userName;
+  final dynamic user;
 
-  const _DashboardHeader({required this.userName});
+  const _DashboardHeader({required this.user});
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -101,6 +131,21 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBroker = user?.isBroker == true;
+    final isAgent = user?.isAgent == true;
+    final isCorporate = user?.isCorporate == true;
+    final roleName = isBroker
+        ? 'BROKER PORTAL'
+        : (isAgent
+            ? 'AGENT PORTAL'
+            : (isCorporate ? 'CORPORATE PORTAL' : 'CUSTOMER'));
+
+    final roleColor = isBroker
+        ? const Color(0xFFF59E0B)
+        : (isAgent
+            ? const Color(0xFF10B981)
+            : (isCorporate ? const Color(0xFF6366F1) : const Color(0xFF38BDF8)));
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -124,15 +169,43 @@ class _DashboardHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _greeting(),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.7),
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          _greeting(),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: roleColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: roleColor.withOpacity(0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            roleName,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: roleColor,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      userName,
+                      user?.name ?? 'Welcome',
                       style: AppTextStyles.headlineMedium.copyWith(
                         color: Colors.white,
                       ),
@@ -151,7 +224,8 @@ class _DashboardHeader extends StatelessWidget {
                         color: Colors.white,
                         size: 26,
                       ),
-                      onPressed: () => context.push(AppConstants.routeNotifications),
+                      onPressed: () =>
+                          context.push(AppConstants.routeNotifications),
                     ),
                     Positioned(
                       right: 8,
@@ -171,37 +245,58 @@ class _DashboardHeader extends StatelessWidget {
             ],
           ).animate().fadeIn(duration: 500.ms),
           const SizedBox(height: 20),
-          // Insurance card teaser
-          GlassCard(
-            child: Row(
-              children: [
-                const Icon(Icons.shield_rounded, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Your Insurance Summary',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Tap to view all policies',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
+          // Role-tailored summary card teaser
+          GestureDetector(
+            onTap: () => context.push(AppConstants.routePolicies),
+            child: GlassCard(
+              child: Row(
+                children: [
+                  Icon(
+                    isBroker
+                        ? Icons.business_center_rounded
+                        : (isAgent
+                            ? Icons.handshake_rounded
+                            : Icons.shield_rounded),
+                    color: Colors.white,
+                    size: 28,
                   ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 16,
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isBroker
+                              ? 'Brokerage Portfolio Summary'
+                              : (isAgent
+                                  ? 'Agent Performance Summary'
+                                  : (isCorporate
+                                      ? 'Corporate Insurance Portfolio'
+                                      : 'Your Insurance Summary')),
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          isBroker
+                              ? 'Tap to manage client policies & quotes'
+                              : (isAgent
+                                  ? 'Tap to view assigned client policies'
+                                  : 'Tap to view all policies'),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white.withOpacity(0.7),
+                    size: 16,
+                  ),
+                ],
+              ),
             ),
           )
               .animate()
@@ -213,7 +308,7 @@ class _DashboardHeader extends StatelessWidget {
   }
 }
 
-// ── Stats Grid ────────────────────────────────────────────
+// ── Customer Stats Grid ───────────────────────────────────
 
 class _StatsGrid extends StatelessWidget {
   final dynamic stats;
@@ -274,11 +369,167 @@ class _StatsGrid extends StatelessWidget {
   }
 }
 
+// ── Agent & Broker Stats Grid ─────────────────────────────
+
+class _AgentBrokerStatsGrid extends StatelessWidget {
+  final dynamic stats;
+  final bool isBroker;
+
+  const _AgentBrokerStatsGrid({
+    required this.stats,
+    required this.isBroker,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isBroker ? 'Brokerage Overview' : 'Agent Performance',
+                style: AppTextStyles.titleLarge,
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isBroker
+                      ? const Color(0xFFFEF3C7)
+                      : const Color(0xFFD1FAE5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isBroker ? 'BROKER METRICS' : 'AGENT METRICS',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: isBroker
+                        ? const Color(0xFF92400E)
+                        : const Color(0xFF065F46),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.4,
+            children: [
+              StatsCard(
+                title: 'Total Clients',
+                value: '${stats.totalClients}',
+                icon: Icons.people_alt_rounded,
+                color: AppColors.primary,
+                bgColor: AppColors.primaryContainer,
+              ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2),
+              StatsCard(
+                title: 'Active Policies',
+                value: '${stats.activePolicies}',
+                icon: Icons.shield_rounded,
+                color: AppColors.success,
+                bgColor: AppColors.successLight,
+              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+              StatsCard(
+                title: 'Pending Policies',
+                value: '${stats.pendingPolicies}',
+                icon: Icons.pending_actions_rounded,
+                color: AppColors.warning,
+                bgColor: AppColors.warningLight,
+              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
+              StatsCard(
+                title: isBroker ? 'Total Commission' : 'Total Premium',
+                value: AppFormatter.formatCurrency(
+                  isBroker
+                      ? stats.totalCommission
+                      : (stats.totalPremium > 0
+                          ? stats.totalPremium
+                          : stats.totalCommission),
+                ),
+                icon: isBroker
+                    ? Icons.account_balance_wallet_rounded
+                    : Icons.payments_rounded,
+                color: const Color(0xFF8B5CF6),
+                bgColor: const Color(0xFFF3E8FF),
+                isSmallText: true,
+              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Quick Actions ─────────────────────────────────────────
 
 class _QuickActions extends StatelessWidget {
+  final bool isAgentOrBroker;
+
+  const _QuickActions({this.isAgentOrBroker = false});
+
   @override
   Widget build(BuildContext context) {
+    if (isAgentOrBroker) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('dashboard.quick_actions'.tr(), style: AppTextStyles.titleLarge),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: QuickActionButton(
+                    label: 'Browse Policies',
+                    icon: Icons.add_shopping_cart_rounded,
+                    color: AppColors.primary,
+                    onTap: () => context.push(AppConstants.routeBrowsePolicies),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: QuickActionButton(
+                    label: 'Client Policies',
+                    icon: Icons.shield_rounded,
+                    color: AppColors.success,
+                    onTap: () => context.push(AppConstants.routePolicies),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: QuickActionButton(
+                    label: 'Claims',
+                    icon: Icons.assignment_rounded,
+                    color: AppColors.warning,
+                    onTap: () => context.push(AppConstants.routeClaims),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: QuickActionButton(
+                    label: 'Payments',
+                    icon: Icons.payment_rounded,
+                    color: AppColors.secondary,
+                    onTap: () => context.push(AppConstants.routePayments),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
       child: Column(

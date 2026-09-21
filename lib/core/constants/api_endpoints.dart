@@ -5,6 +5,7 @@ class ApiEndpoints {
   // ── Auth ─────────────────────────────────────────────────
   static const String login = '/auth/login';
   static const String register = '/auth/register';
+  static const String brokerRegister = '/auth/broker/register';
 
   // ── Portal – Dashboard ────────────────────────────────────
   static const String customerStats = '/portal/dashboard/customer-stats';
@@ -66,6 +67,20 @@ class ApiEndpoints {
   static const String portalPolicyDurations = '/portal/policy-durations';
   static const String portalPolicyFors = '/portal/policy-fors';
   static const String portalDocumentTypes = '/portal/document-types';
+
+  // ── Portal – Broker ──────────────────────────────────────
+  static const String brokerDashboard = '/portal/broker/dashboard';
+  static const String brokerAgreements = '/portal/broker/agreements';
+  static String brokerAgreementById(int id) => '/portal/broker/agreements/$id';
+  static const String brokerPolicies = '/portal/broker/policies';
+  static const String brokerClaims = '/portal/broker/claims';
+  static const String brokerClients = '/portal/broker/clients';
+  static const String brokerDocuments = '/portal/broker/documents';
+  static const String brokerEndorsements = '/portal/broker/endorsements';
+  static const String brokerKycUpload = '/portal/broker/kyc-upload';
+  static const String brokerNotificationPrefs =
+      '/portal/broker/notification-preferences';
+  static const String brokerProfile = '/portal/broker/profile';
 
   // ── Contact (public) ─────────────────────────────────────
   static const String contact = '/contact';

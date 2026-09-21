@@ -16,6 +16,18 @@ final customerStatsProvider = FutureProvider<CustomerStatsModel>((ref) async {
   }
 });
 
+final agentStatsProvider = FutureProvider<AgentStatsModel>((ref) async {
+  final dio = getIt<Dio>();
+  try {
+    final response = await dio.get(ApiEndpoints.agentStats);
+    final data = response.data as Map<String, dynamic>;
+    final payload = data['data'] as Map<String, dynamic>? ?? data;
+    return AgentStatsModel.fromJson(payload);
+  } catch (_) {
+    return const AgentStatsModel();
+  }
+});
+
 final latestNoticesProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final dio = getIt<Dio>();

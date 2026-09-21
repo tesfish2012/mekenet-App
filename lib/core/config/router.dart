@@ -8,6 +8,14 @@ import '../../features/authentication/presentation/pages/otp_page.dart';
 import '../../features/authentication/presentation/pages/pin_login_page.dart';
 import '../../features/authentication/presentation/pages/create_pin_page.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
+import '../../features/broker/presentation/pages/broker_agreements_page.dart';
+import '../../features/broker/presentation/pages/broker_claims_page.dart';
+import '../../features/broker/presentation/pages/broker_clients_page.dart';
+import '../../features/broker/presentation/pages/broker_dashboard_page.dart';
+import '../../features/broker/presentation/pages/broker_documents_page.dart';
+import '../../features/broker/presentation/pages/broker_endorsements_page.dart';
+import '../../features/broker/presentation/pages/broker_policies_page.dart';
+import '../../features/broker/presentation/pages/broker_profile_page.dart';
 import '../../features/claims/presentation/pages/claims_page.dart';
 import '../../features/claims/presentation/pages/claim_detail_page.dart';
 import '../../features/claims/presentation/pages/new_claim_page.dart';
@@ -77,7 +85,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final publicRoutes = [
         AppConstants.routeOnboarding,
         AppConstants.routeLogin,
-        '/register',
+        AppConstants.routeRegister,
+        AppConstants.routeBrokerRegister,
         AppConstants.routeForgotPassword,
         AppConstants.routeOtp,
         AppConstants.routePinLogin,
@@ -121,11 +130,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: '/register',
+        path: AppConstants.routeRegister,
         name: 'register',
+        pageBuilder: (context, state) {
+          final isBroker = state.uri.queryParameters['role'] == 'broker';
+          return _slideTransition(
+            state: state,
+            child: RegisterPage(initialIsBroker: isBroker),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeBrokerRegister,
+        name: 'broker-register',
         pageBuilder: (context, state) => _slideTransition(
           state: state,
-          child: const RegisterPage(),
+          child: const RegisterPage(initialIsBroker: true),
         ),
       ),
       GoRoute(
@@ -195,6 +215,48 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => _noTransition(
               state: state,
               child: const ProfilePage(),
+            ),
+          ),
+
+          // ── Broker Portal (inside shell for bottom nav) ──
+          GoRoute(
+            path: kBrokerDashRoute,
+            name: 'broker-dashboard',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const BrokerDashboardPage(),
+            ),
+          ),
+          GoRoute(
+            path: kBrokerClientsRoute,
+            name: 'broker-clients',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const BrokerClientsPage(),
+            ),
+          ),
+          GoRoute(
+            path: kBrokerPoliciesRoute,
+            name: 'broker-policies',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const BrokerPoliciesPage(),
+            ),
+          ),
+          GoRoute(
+            path: kBrokerClaimsRoute,
+            name: 'broker-claims',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const BrokerClaimsPage(),
+            ),
+          ),
+          GoRoute(
+            path: kBrokerProfileRoute,
+            name: 'broker-profile',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const BrokerProfilePage(),
             ),
           ),
         ],
@@ -314,6 +376,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'terms',
         builder: (context, state) => const TermsPage(),
       ),
+
+      // ── Broker Portal – full-screen sub-pages (outside shell) ──
+      GoRoute(
+        path: kBrokerAgreementsRoute,
+        name: 'broker-agreements',
+        builder: (context, state) => const BrokerAgreementsPage(),
+      ),
+      GoRoute(
+        path: kBrokerEndorsementsRoute,
+        name: 'broker-endorsements',
+        builder: (context, state) => const BrokerEndorsementsPage(),
+      ),
+      GoRoute(
+        path: kBrokerDocumentsRoute,
+        name: 'broker-documents',
+        builder: (context, state) => const BrokerDocumentsPage(),
+      ),
+
       GoRoute(
         path: AppConstants.routeNotFound,
         name: 'not-found',

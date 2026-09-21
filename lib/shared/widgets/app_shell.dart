@@ -1,24 +1,35 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 
 /// Bottom navigation shell — wraps all main screens
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   final Widget child;
 
   const AppShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final isBroker = user?.isBroker ?? false;
+
     return Scaffold(
       body: child,
-      bottomNavigationBar: _BottomNav(),
+      bottomNavigationBar: isBroker
+          ? const _BrokerBottomNav()
+          : const _CustomerBottomNav(),
     );
   }
 }
 
-class _BottomNav extends StatelessWidget {
+// ── Customer / Agent bottom nav (unchanged) ───────────────
+
+class _CustomerBottomNav extends StatelessWidget {
+  const _CustomerBottomNav();
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
@@ -36,6 +47,45 @@ class _BottomNav extends StatelessWidget {
     );
     if (selectedIndex < 0) selectedIndex = 0;
 
+    return _NavBar(items: items, selectedIndex: selectedIndex);
+  }
+}
+
+// ── Broker bottom nav (no Payments) ──────────────────────
+
+class _BrokerBottomNav extends StatelessWidget {
+  const _BrokerBottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+
+    final items = [
+      _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
+      _NavItem(icon: Icons.people_alt_rounded, label: 'Clients', path: '/broker/clients'),
+      _NavItem(icon: Icons.shield_rounded, label: 'Policies', path: '/broker/policies'),
+      _NavItem(icon: Icons.assignment_rounded, label: 'Claims', path: '/broker/claims'),
+      _NavItem(icon: Icons.person_rounded, label: 'Profile', path: '/broker/profile'),
+    ];
+
+    int selectedIndex = items.indexWhere(
+      (item) => location.startsWith(item.path),
+    );
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    return _NavBar(items: items, selectedIndex: selectedIndex);
+  }
+}
+
+// ── Shared nav bar renderer ───────────────────────────────
+
+class _NavBar extends StatelessWidget {
+  final List<_NavItem> items;
+  final int selectedIndex;
+  const _NavBar({required this.items, required this.selectedIndex});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.primary,

@@ -51,6 +51,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<String>> registerBroker(BrokerRegisterRequest request) async {
+    try {
+      final message = await _remote.registerBroker(request);
+      return success(message);
+    } catch (e) {
+      return failure(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<void>> logout() async {
     try {
       await _secureStorage.clearTokens();

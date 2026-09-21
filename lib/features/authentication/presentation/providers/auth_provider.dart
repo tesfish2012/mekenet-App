@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/injectable_config.dart';
 import '../../../../core/storage/preferences_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
+import '../../data/models/auth_model.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -48,11 +49,11 @@ class AuthState {
         errorMessage = null,
         successMessage = msg ?? u.message;
 
-  const AuthState.unauthenticated([String? msg])
+  const AuthState.unauthenticated([String? msg, String? successMsg])
       : status = AuthStatus.unauthenticated,
         user = null,
         errorMessage = msg,
-        successMessage = null;
+        successMessage = successMsg;
 
   bool get isInitial => status == AuthStatus.initial;
   bool get isLoading => status == AuthStatus.loading;
@@ -133,6 +134,29 @@ class AuthNotifier extends Notifier<AuthState> {
         },
         (user) {
           state = AuthState.authenticated(user, user.message);
+          return true;
+        },
+      );
+    } catch (e) {
+      state = AuthState.unauthenticated(
+        e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> registerBroker(BrokerRegisterRequest request) async {
+    state = const AuthState.loading();
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final result = await repo.registerBroker(request);
+      return result.fold(
+        (failure) {
+          state = AuthState.unauthenticated(failure.message);
+          return false;
+        },
+        (message) {
+          state = AuthState.unauthenticated(null, message);
           return true;
         },
       );

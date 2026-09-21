@@ -238,18 +238,71 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ).animate().fadeIn(delay: 150.ms),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
+          _RoleBadge(role: role).animate().fadeIn(delay: 200.ms),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoleBadge extends StatelessWidget {
+  final String role;
+
+  const _RoleBadge({required this.role});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = role.toUpperCase();
+    final IconData icon;
+    final Color badgeColor;
+    final String label;
+
+    switch (r) {
+      case 'BROKER':
+        icon = Icons.business_center_rounded;
+        badgeColor = const Color(0xFFF59E0B);
+        label = 'Insurance Broker';
+        break;
+      case 'AGENT':
+        icon = Icons.handshake_rounded;
+        badgeColor = const Color(0xFF10B981);
+        label = 'Insurance Agent';
+        break;
+      case 'CORPORATE':
+        icon = Icons.corporate_fare_rounded;
+        badgeColor = const Color(0xFF818CF8);
+        label = 'Corporate Client';
+        break;
+      case 'ADMIN':
+        icon = Icons.admin_panel_settings_rounded;
+        badgeColor = const Color(0xFFEF4444);
+        label = 'Administrator';
+        break;
+      default:
+        icon = Icons.person_rounded;
+        badgeColor = const Color(0xFF38BDF8);
+        label = 'Customer';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: badgeColor.withOpacity(0.6), width: 1.2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: badgeColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
             ),
-            child: Text(
-              role,
-              style: AppTextStyles.labelMedium.copyWith(color: Colors.white),
-            ),
-          ).animate().fadeIn(delay: 200.ms),
+          ),
         ],
       ),
     );
