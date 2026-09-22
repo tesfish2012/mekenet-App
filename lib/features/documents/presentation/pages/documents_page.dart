@@ -29,27 +29,29 @@ class DocumentsPage extends ConsumerWidget {
         color: AppColors.primary,
         child: docsAsync.when(
           loading: () => const ShimmerList(itemHeight: 80),
-          error: (e, _) => ErrorView(
-            message: e.toString(),
-            onRetry: () => ref.invalidate(allDocumentsProvider),
-          ),
-          data: (docs) => docs.isEmpty
-              ? EmptyView(
-                  title: 'documents.no_documents'.tr(),
-                  subtitle: 'Upload documents for your active policies.',
-                  icon: Icons.folder_open_outlined,
-                  actionLabel: 'documents.upload_document'.tr(),
-                  onAction: () => _showUploadSheet(context, ref),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: docs.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) => _DocumentCard(
-                    doc: docs[index],
-                    index: index,
-                  ),
-                ),
+          error:
+              (e, _) => ErrorView(
+                message: e.toString(),
+                onRetry: () => ref.invalidate(allDocumentsProvider),
+              ),
+          data:
+              (docs) =>
+                  docs.isEmpty
+                      ? EmptyView(
+                        title: 'documents.no_documents'.tr(),
+                        subtitle: 'Upload documents for your active policies.',
+                        icon: Icons.folder_open_outlined,
+                        actionLabel: 'documents.upload_document'.tr(),
+                        onAction: () => _showUploadSheet(context, ref),
+                      )
+                      : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: docs.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder:
+                            (context, index) =>
+                                _DocumentCard(doc: docs[index], index: index),
+                      ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -76,10 +78,11 @@ class DocumentsPage extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => ProviderScope(
-        parent: ProviderScope.containerOf(context),
-        child: _UploadSheet(),
-      ),
+      builder:
+          (ctx) => ProviderScope(
+            parent: ProviderScope.containerOf(context),
+            child: _UploadSheet(),
+          ),
     );
   }
 }
@@ -94,6 +97,7 @@ class _DocumentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
@@ -115,14 +119,18 @@ class _DocumentCard extends StatelessWidget {
                 Text(
                   doc.originalName ?? doc.documentType,
                   style: AppTextStyles.titleSmall,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(doc.documentType, style: AppTextStyles.bodySmall),
                     if (doc.fileSize != null) ...[
-                      Text(' • ', style: AppTextStyles.bodySmall),
+                      const Text('•'),
                       Text(
                         AppFormatter.formatFileSize(doc.fileSize!),
                         style: AppTextStyles.bodySmall,
@@ -141,7 +149,10 @@ class _DocumentCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          StatusChip.documentStatus(doc.status),
+          Align(
+            alignment: Alignment.topCenter,
+            child: StatusChip.documentStatus(doc.status),
+          ),
         ],
       ),
     ).animate().fadeIn(delay: (index * 50).ms).slideX(begin: 0.05);
@@ -185,13 +196,15 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
     if (_selectedInsuranceId == null ||
         _selectedDocType == null ||
         _selectedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
-    final success = await ref.read(uploadDocumentProvider.notifier).upload(
+    final success = await ref
+        .read(uploadDocumentProvider.notifier)
+        .upload(
           insuranceId: _selectedInsuranceId!,
           documentType: _selectedDocType!,
           filePath: _selectedFile!.path,
@@ -230,8 +243,10 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('documents.upload_document'.tr(),
-                  style: AppTextStyles.headlineSmall),
+              Text(
+                'documents.upload_document'.tr(),
+                style: AppTextStyles.headlineSmall,
+              ),
               IconButton(
                 icon: const Icon(Icons.close_rounded),
                 onPressed: () => Navigator.pop(context),
@@ -247,23 +262,27 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
           insurancesAsync.when(
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => const Text('Error loading policies'),
-            data: (insurances) => DropdownButtonFormField<int>(
-              isExpanded: true,
-              value: _selectedInsuranceId,
-              hint: const Text('Choose policy'),
-              decoration: const InputDecoration(),
-              items: insurances
-                  .map((i) => DropdownMenuItem<int>(
-                        value: i.id,
-                        child: Text(
-                          '${i.policyTitle} (${i.insuranceNumber})',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _selectedInsuranceId = v),
-            ),
+            data:
+                (insurances) => DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  value: _selectedInsuranceId,
+                  hint: const Text('Choose policy'),
+                  decoration: const InputDecoration(),
+                  items:
+                      insurances
+                          .map(
+                            (i) => DropdownMenuItem<int>(
+                              value: i.id,
+                              child: Text(
+                                '${i.policyTitle} (${i.insuranceNumber})',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (v) => setState(() => _selectedInsuranceId = v),
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -274,9 +293,10 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
             value: _selectedDocType,
             hint: const Text('Choose document type'),
             decoration: const InputDecoration(),
-            items: _docTypes
-                .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                .toList(),
+            items:
+                _docTypes
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .toList(),
             onChanged: (v) => setState(() => _selectedDocType = v),
           ),
           const SizedBox(height: 16),
@@ -289,15 +309,17 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _selectedFile != null
-                      ? AppColors.success
-                      : AppColors.lightBorder,
+                  color:
+                      _selectedFile != null
+                          ? AppColors.success
+                          : AppColors.lightBorder,
                   style: BorderStyle.solid,
                 ),
                 borderRadius: BorderRadius.circular(12),
-                color: _selectedFile != null
-                    ? AppColors.successLight
-                    : AppColors.grey50,
+                color:
+                    _selectedFile != null
+                        ? AppColors.successLight
+                        : AppColors.grey50,
               ),
               child: Row(
                 children: [
@@ -305,16 +327,21 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
                     _selectedFile != null
                         ? Icons.check_circle_rounded
                         : Icons.attach_file_rounded,
-                    color: _selectedFile != null
-                        ? AppColors.success
-                        : AppColors.grey400,
+                    color:
+                        _selectedFile != null
+                            ? AppColors.success
+                            : AppColors.grey400,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _selectedFile?.name ?? 'Tap to select file (PDF, JPG, PNG)',
+                      _selectedFile?.name ??
+                          'Tap to select file (PDF, JPG, PNG)',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: _selectedFile != null ? null : AppColors.lightTextHint,
+                        color:
+                            _selectedFile != null
+                                ? null
+                                : AppColors.lightTextHint,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
