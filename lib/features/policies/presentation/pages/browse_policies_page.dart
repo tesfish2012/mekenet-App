@@ -75,7 +75,7 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () {
-                if (Navigator.of(context).canPop()) {
+                if (context.canPop()) {
                   context.pop();
                 } else {
                   context.go('/dashboard');

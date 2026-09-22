@@ -430,7 +430,7 @@ class _StatsGrid extends ConsumerWidget {
                       ref.read(selectedPolicyTypeIdProvider.notifier).state =
                           current == type.id ? null : type.id;
                       ref.read(policySearchQueryProvider.notifier).state = '';
-                      context.go('/policies/browse');
+                      context.push('/policies/browse');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
