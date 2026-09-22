@@ -11,7 +11,6 @@ import '../../../../shared/widgets/status_chip.dart';
 import '../providers/claims_provider.dart';
 
 import 'package:file_picker/file_picker.dart';
-import '../../data/models/claim_model.dart';
 
 class ClaimDetailPage extends ConsumerWidget {
   final int claimId;
@@ -38,174 +37,228 @@ class ClaimDetailPage extends ConsumerWidget {
       body: claimAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => Center(child: Text(e.toString())),
-        data: (claim) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              AppCard(
-                gradient: AppColors.cardGradient,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        data:
+            (claim) => SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  AppCard(
+                    gradient: AppColors.cardGradient,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.assignment_rounded, color: Colors.white, size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            claim.claimNumber,
-                            style: AppTextStyles.titleLarge.copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    StatusChip.claimStatus(claim.status),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Claim Info
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Claim Information', style: AppTextStyles.titleMedium),
-                    const Divider(height: 20),
-                    _Row(label: 'claims.claim_amount'.tr(),
-                        value: AppFormatter.formatCurrency(claim.claimAmount)),
-                    if (claim.approvedAmount != null)
-                      _Row(label: 'claims.approved_amount'.tr(),
-                          value: AppFormatter.formatCurrency(claim.approvedAmount!)),
-                    _Row(label: 'claims.incident_date'.tr(),
-                        value: AppFormatter.formatDate(AppFormatter.parseDate(claim.incidentDate))),
-                    _Row(label: 'claims.claim_date'.tr(),
-                        value: AppFormatter.formatDate(AppFormatter.parseDate(claim.claimDate))),
-                    if (claim.policyTitle != null)
-                      _Row(label: 'Policy', value: claim.policyTitle!),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Description
-              if (claim.description != null) ...[
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('claims.description'.tr(), style: AppTextStyles.titleMedium),
-                      const SizedBox(height: 8),
-                      Text(claim.description!, style: AppTextStyles.bodyMedium),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Admin Notes
-              if (claim.adminNotes != null && claim.adminNotes!.isNotEmpty) ...[
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Admin Notes', style: AppTextStyles.titleMedium),
-                      const SizedBox(height: 8),
-                      Text(claim.adminNotes!, style: AppTextStyles.bodyMedium),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Attached Documents List
-              docsAsync.whenData((docs) {
-                if (docs.isEmpty) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Attached Documents (${docs.length})',
-                        style: AppTextStyles.titleMedium),
-                    const SizedBox(height: 10),
-                    ...docs.map(
-                      (doc) => Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.lightBorder),
-                        ),
-                        child: Row(
+                        Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.description_rounded,
-                                color: AppColors.primary,
-                                size: 20,
-                              ),
+                            const Icon(
+                              Icons.assignment_rounded,
+                              color: Colors.white,
+                              size: 28,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    doc.originalName ?? doc.documentType,
-                                    style: AppTextStyles.titleSmall,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        doc.documentType,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.grey500,
-                                        ),
-                                      ),
-                                      if (doc.fileSize != null) ...[
-                                        Text(' • ', style: AppTextStyles.bodySmall),
-                                        Text(
-                                          AppFormatter.formatFileSize(doc.fileSize!),
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.grey500,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ],
+                              child: Text(
+                                claim.claimNumber,
+                                style: AppTextStyles.titleLarge.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                            StatusChip.documentStatus(doc.status),
                           ],
                         ),
+                        const SizedBox(height: 12),
+                        StatusChip.claimStatus(claim.status),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Claim Info
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Claim Information',
+                          style: AppTextStyles.titleMedium,
+                        ),
+                        const Divider(height: 20),
+                        _Row(
+                          label: 'claims.claim_amount'.tr(),
+                          value: AppFormatter.formatCurrency(claim.claimAmount),
+                        ),
+                        if (claim.approvedAmount != null)
+                          _Row(
+                            label: 'claims.approved_amount'.tr(),
+                            value: AppFormatter.formatCurrency(
+                              claim.approvedAmount!,
+                            ),
+                          ),
+                        _Row(
+                          label: 'claims.incident_date'.tr(),
+                          value: AppFormatter.formatDate(
+                            AppFormatter.parseDate(claim.incidentDate),
+                          ),
+                        ),
+                        _Row(
+                          label: 'claims.claim_date'.tr(),
+                          value: AppFormatter.formatDate(
+                            AppFormatter.parseDate(claim.claimDate),
+                          ),
+                        ),
+                        if (claim.policyTitle != null)
+                          _Row(label: 'Policy', value: claim.policyTitle!),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  if (claim.description != null) ...[
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'claims.description'.tr(),
+                            style: AppTextStyles.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            claim.description!,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
                   ],
-                );
-              }).value ?? const SizedBox.shrink(),
 
-              // Upload documents button
-              AppButton(
-                label: 'claims.upload_documents'.tr(),
-                onPressed: () => _showClaimUploadSheet(context, ref, claim.id),
-                variant: AppButtonVariant.primary,
-                leadingIcon: Icons.upload_file_rounded,
+                  // Admin Notes
+                  if (claim.adminNotes != null &&
+                      claim.adminNotes!.isNotEmpty) ...[
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Admin Notes', style: AppTextStyles.titleMedium),
+                          const SizedBox(height: 8),
+                          Text(
+                            claim.adminNotes!,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Attached Documents List
+                  docsAsync.whenData((docs) {
+                        if (docs.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Attached Documents (${docs.length})',
+                              style: AppTextStyles.titleMedium,
+                            ),
+                            const SizedBox(height: 10),
+                            ...docs.map(
+                              (doc) => Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.lightBorder,
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryContainer,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.description_rounded,
+                                        color: AppColors.primary,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            doc.originalName ??
+                                                doc.documentType,
+                                            style: AppTextStyles.titleSmall,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 4,
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            children: [
+                                              Text(
+                                                doc.documentType,
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                      color: AppColors.grey500,
+                                                    ),
+                                              ),
+                                              if (doc.fileSize != null) ...[
+                                                const Text('•'),
+                                                Text(
+                                                  AppFormatter.formatFileSize(
+                                                    doc.fileSize!,
+                                                  ),
+                                                  style: AppTextStyles.bodySmall
+                                                      .copyWith(
+                                                        color:
+                                                            AppColors.grey500,
+                                                      ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    StatusChip.documentStatus(doc.status),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      }).value ??
+                      const SizedBox.shrink(),
+
+                  // Upload documents button
+                  AppButton(
+                    label: 'claims.upload_documents'.tr(),
+                    onPressed:
+                        () => _showClaimUploadSheet(context, ref, claim.id),
+                    variant: AppButtonVariant.primary,
+                    leadingIcon: Icons.upload_file_rounded,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
       ),
     );
   }
@@ -280,12 +333,17 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
     if (_selectedFile!.bytes == null && _selectedFile!.path == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('File data could not be read. Please choose another file.')),
+          content: Text(
+            'File data could not be read. Please choose another file.',
+          ),
+        ),
       );
       return;
     }
 
-    final success = await ref.read(uploadClaimDocumentProvider.notifier).upload(
+    final success = await ref
+        .read(uploadClaimDocumentProvider.notifier)
+        .upload(
           claimId: widget.claimId,
           documentType: _selectedDocType!,
           filePath: _selectedFile!.path,
@@ -358,23 +416,31 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: _selectedDocType,
+            initialValue: _selectedDocType,
             hint: const Text('Select document type'),
             decoration: InputDecoration(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.lightBorder),
               ),
             ),
-            items: _docTypes
-                .map((t) => DropdownMenuItem(
-                      value: t,
-                      child:
-                          Text(t, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ))
-                .toList(),
+            items:
+                _docTypes
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(
+                          t,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                    .toList(),
             onChanged: (v) => setState(() => _selectedDocType = v),
           ),
           const SizedBox(height: 16),
@@ -389,14 +455,16 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _selectedFile != null
-                      ? AppColors.success
-                      : AppColors.lightBorder,
+                  color:
+                      _selectedFile != null
+                          ? AppColors.success
+                          : AppColors.lightBorder,
                 ),
                 borderRadius: BorderRadius.circular(12),
-                color: _selectedFile != null
-                    ? AppColors.successLight
-                    : AppColors.grey50,
+                color:
+                    _selectedFile != null
+                        ? AppColors.successLight
+                        : AppColors.grey50,
               ),
               child: Row(
                 children: [
@@ -404,9 +472,10 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
                     _selectedFile != null
                         ? Icons.check_circle_rounded
                         : Icons.upload_file_rounded,
-                    color: _selectedFile != null
-                        ? AppColors.success
-                        : AppColors.primary,
+                    color:
+                        _selectedFile != null
+                            ? AppColors.success
+                            : AppColors.primary,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -417,12 +486,14 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
                           _selectedFile?.name ??
                               'Tap to browse files (PDF, JPG, PNG)',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: _selectedFile != null
-                                ? AppColors.lightTextPrimary
-                                : AppColors.lightTextHint,
-                            fontWeight: _selectedFile != null
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            color:
+                                _selectedFile != null
+                                    ? AppColors.lightTextPrimary
+                                    : AppColors.lightTextHint,
+                            fontWeight:
+                                _selectedFile != null
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -460,4 +531,3 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
     );
   }
 }
-

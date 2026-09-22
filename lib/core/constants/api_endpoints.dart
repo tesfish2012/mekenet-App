@@ -64,6 +64,7 @@ class ApiEndpoints {
   static const String portalHistories = '/portal/histories';
 
   // ── Portal – Customer ─────────────────────────────────────
+  static const String portalCustomerProfile = '/portal/customer/profile';
   static const String portalCustomerAgents = '/portal/customer/agents';
 
   // ── Portal – Lookups ──────────────────────────────────────
