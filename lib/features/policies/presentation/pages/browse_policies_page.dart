@@ -255,6 +255,7 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
                     height: 38,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
+                      controller: _chipScrollCtrl,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
                         _CategoryChip(
