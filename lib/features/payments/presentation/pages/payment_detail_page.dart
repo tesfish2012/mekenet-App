@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -92,24 +94,54 @@ class PaymentDetailPage extends ConsumerWidget {
                   children: [
                     Text('payments.receipt'.tr(), style: AppTextStyles.titleMedium),
                     const SizedBox(height: 12),
-                    if (payment.receiptFile != null)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.successLight,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check_circle_rounded,
-                                color: AppColors.success, size: 20),
-                            const SizedBox(width: 8),
-                            Text('Receipt uploaded',
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.success,
-                                )),
-                          ],
-                        ),
+                    if (payment.receiptFile != null && payment.receiptFile!.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.successLight,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.check_circle_rounded,
+                                    color: AppColors.success, size: 20),
+                                const SizedBox(width: 8),
+                                Text('Receipt uploaded',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.success,
+                                    )),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: CachedNetworkImage(
+                              imageUrl: '${AppConstants.fileBaseUrl}/${payment.receiptFile}',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 220,
+                              placeholder: (context, url) => Container(
+                                height: 220,
+                                color: AppColors.lightBorder,
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                height: 220,
+                                color: AppColors.grey100,
+                                child: const Center(
+                                  child: Icon(Icons.broken_image_rounded,
+                                      size: 42, color: AppColors.grey400),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       )
                     else
                       AppButton(
@@ -138,11 +170,14 @@ class PaymentDetailPage extends ConsumerWidget {
     final file = await picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
 
+    final fileBytes = await file.readAsBytes();
+
     final success = await ref.read(uploadReceiptProvider.notifier).upload(
-          insuranceId: payment.insuranceId,
-          paymentId: payment.id,
-          filePath: file.path,
-        );
+      insuranceId: payment.insuranceId,
+      paymentId: payment.id,
+      fileBytes: fileBytes,
+      fileName: file.name,
+    );
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
