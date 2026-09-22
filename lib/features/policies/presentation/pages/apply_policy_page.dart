@@ -121,17 +121,16 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
               : policy.maxSumAssured);
 
       final request = ApplyPolicyRequest(
-        customerId: 0,
         policyId: policy.id,
-        agentId: 0,
-        agentCommission: policy.agentCommissionPercent,
         sumAssured: sumAssured,
         premiumAmount: premiumAmount,
         startDate: _formatDate(_startDate),
         endDate: _formatDate(_endDate),
         policyTerm: policyTerm,
         statusLabel: 'PENDING',
-        notes: _notesCtrl.text.trim(),
+        notes: _notesCtrl.text.trim().isNotEmpty
+            ? _notesCtrl.text.trim()
+            : null,
       );
 
       final dio = getIt<Dio>();
