@@ -1,9 +1,37 @@
+/// Policy Category / Type (from /portal/policies/types)
+class PolicyTypeModel {
+  final int id;
+  final String name;
+  final String? description;
+  final bool active;
+  final String? createdAt;
+
+  const PolicyTypeModel({
+    required this.id,
+    required this.name,
+    this.description,
+    this.active = true,
+    this.createdAt,
+  });
+
+  factory PolicyTypeModel.fromJson(Map<String, dynamic> json) {
+    return PolicyTypeModel(
+      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String?,
+      active: json['active'] as bool? ?? true,
+      createdAt: json['createdAt'] as String?,
+    );
+  }
+}
+
 /// Insurance policy product (browse catalogue)
 class PolicyModel {
   final int id;
   final String code;
   final String title;
   final String? description;
+  final int? policyTypeId;
   final String policyTypeName;
   final String? policySubTypeName;
   final String? liabilityRisk;
@@ -17,6 +45,7 @@ class PolicyModel {
   final double agentCommissionPercent;
   final String? termsConditions;
   final bool active;
+  final String? vehicleProductCode;
   /// Pricing tiers from API: [{termsDuration, months, price}, ...]
   final List<Map<String, dynamic>> pricing;
 
@@ -25,6 +54,7 @@ class PolicyModel {
     this.code = '',
     this.title = '',
     this.description,
+    this.policyTypeId,
     this.policyTypeName = '',
     this.policySubTypeName,
     this.liabilityRisk,
@@ -38,11 +68,12 @@ class PolicyModel {
     this.agentCommissionPercent = 0.0,
     this.termsConditions,
     this.active = true,
+    this.vehicleProductCode,
     this.pricing = const [],
   });
 
   factory PolicyModel.fromJson(Map<String, dynamic> json) {
-    // Parse pricing tiers safely
+    // Parse pricing tiers safely (handles List or String)
     final rawPricing = json['pricing'];
     final List<Map<String, dynamic>> pricingList = rawPricing is List
         ? rawPricing
@@ -56,6 +87,7 @@ class PolicyModel {
       code: json['code'] as String? ?? '',
       title: json['title'] as String? ?? '',
       description: json['description'] as String?,
+      policyTypeId: json['policyTypeId'] != null ? _toInt(json['policyTypeId']) : null,
       policyTypeName: json['policyTypeName'] as String? ??
           (json['policyType'] as Map<String, dynamic>?)?['name'] as String? ?? '',
       policySubTypeName: json['policySubTypeName'] as String?,
@@ -68,8 +100,9 @@ class PolicyModel {
       durationMonths: _toInt(json['durationMonths']),
       taxPercent: _toDouble(json['taxPercent']),
       agentCommissionPercent: _toDouble(json['agentCommissionPercent']),
-      termsConditions: json['termsConditions'] as String?,
+      termsConditions: json['termsConditions'] is String ? json['termsConditions'] as String : null,
       active: json['active'] as bool? ?? true,
+      vehicleProductCode: json['vehicleProductCode'] as String?,
       pricing: pricingList,
     );
   }

@@ -32,9 +32,35 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(policySearchQueryProvider);
-    final policiesAsync = query.isEmpty
-        ? ref.watch(browsePoliciesProvider)
-        : ref.watch(searchPoliciesProvider(query));
+    final selectedTypeId = ref.watch(selectedPolicyTypeIdProvider);
+    final policyTypesAsync = ref.watch(policyTypesProvider);
+    final isVehicleCategory = selectedTypeId == -1;
+
+    final AsyncValue<List<PolicyModel>> rawPoliciesAsync;
+    if (isVehicleCategory) {
+      rawPoliciesAsync = ref.watch(vehiclePoliciesProvider);
+    } else if (query.isNotEmpty) {
+      rawPoliciesAsync = ref.watch(searchPoliciesProvider(query));
+    } else {
+      rawPoliciesAsync = ref.watch(browsePoliciesProvider);
+    }
+
+    final policiesAsync = rawPoliciesAsync.whenData((list) {
+      var filtered = list;
+      if (selectedTypeId != null && selectedTypeId > 0) {
+        filtered = filtered.where((p) => p.policyTypeId == selectedTypeId).toList();
+      }
+      if (query.isNotEmpty && isVehicleCategory) {
+        final q = query.toLowerCase();
+        filtered = filtered
+            .where((p) =>
+                p.title.toLowerCase().contains(q) ||
+                p.code.toLowerCase().contains(q) ||
+                (p.description?.toLowerCase().contains(q) ?? false))
+            .toList();
+      }
+      return filtered;
+    });
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
@@ -163,12 +189,78 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
             ),
           ),
 
+          // ── Category filter chips (from /portal/policies/types + vehicle) ──
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.only(top: 14, bottom: 4),
+              child: policyTypesAsync.when(
+                loading: () => const SizedBox(
+                  height: 38,
+                  child: Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (types) {
+                  return SizedBox(
+                    height: 38,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        _CategoryChip(
+                          label: 'All',
+                          icon: Icons.grid_view_rounded,
+                          isSelected: selectedTypeId == null,
+                          onTap: () {
+                            ref
+                                .read(selectedPolicyTypeIdProvider.notifier)
+                                .state = null;
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _CategoryChip(
+                          label: 'Vehicle / Motor',
+                          icon: Icons.directions_car_rounded,
+                          isSelected: selectedTypeId == -1,
+                          onTap: () {
+                            ref
+                                .read(selectedPolicyTypeIdProvider.notifier)
+                                .state = selectedTypeId == -1 ? null : -1;
+                          },
+                        ),
+                        for (final type in types) ...[
+                          const SizedBox(width: 8),
+                          _CategoryChip(
+                            label: type.name,
+                            icon: _categoryIcon(type.name),
+                            isSelected: selectedTypeId == type.id,
+                            onTap: () {
+                              ref
+                                  .read(selectedPolicyTypeIdProvider.notifier)
+                                  .state =
+                                  selectedTypeId == type.id ? null : type.id;
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
           // ── Results count bar ──────────────────────────────
           SliverToBoxAdapter(
             child: policiesAsync.whenData((list) {
               return Padding(
                 padding:
-                    const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                    const EdgeInsets.fromLTRB(20, 12, 20, 4),
                 child: Row(
                   children: [
                     Container(
@@ -187,7 +279,13 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (query.isNotEmpty)
+                    if (isVehicleCategory)
+                      Text(
+                        'Vehicle insurance',
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
+                      )
+                    else if (query.isNotEmpty)
                       Text(
                         'for "$query"',
                         style: AppTextStyles.bodySmall
@@ -473,3 +571,87 @@ class _PolicyTag extends StatelessWidget {
     );
   }
 }
+
+// ── Category Chip & Icon Helpers ───────────────────────────
+
+IconData _categoryIcon(String name) {
+  final t = name.toLowerCase();
+  if (t.contains('car') || t.contains('vehicle') || t.contains('motor')) {
+    return Icons.directions_car_rounded;
+  }
+  if (t.contains('health') || t.contains('medic')) {
+    return Icons.local_hospital_rounded;
+  }
+  if (t.contains('life')) {
+    return Icons.favorite_rounded;
+  }
+  if (t.contains('home') || t.contains('prop') || t.contains('fire')) {
+    return Icons.home_rounded;
+  }
+  if (t.contains('travel')) {
+    return Icons.flight_rounded;
+  }
+  return Icons.shield_rounded;
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.grey200,
+            width: 1.2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : AppColors.primary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: isSelected ? Colors.white : AppColors.lightTextPrimary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

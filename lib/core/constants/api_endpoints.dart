@@ -15,7 +15,11 @@ class ApiEndpoints {
   static const String portalPolicies = '/portal/policies';
   static const String portalPolicySearch = '/portal/policies/search';
   static const String portalPolicyTypes = '/portal/policies/types';
+  static const String portalVehiclePolicies = '/portal/policies/vehicle';
   static String portalPolicyById(int id) => '/portal/policies/$id';
+
+  // ── Portal – Renewals ─────────────────────────────────────
+  static const String portalRenewals = '/portal/renewals';
 
   // ── Portal – Insurances (my policies) ────────────────────
   static const String portalInsurances = '/portal/insurances';

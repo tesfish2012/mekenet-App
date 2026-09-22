@@ -12,17 +12,34 @@ import '../../../../shared/widgets/status_chip.dart';
 import '../providers/policies_provider.dart';
 import '../../data/models/policy_model.dart';
 
-class PoliciesPage extends ConsumerWidget {
+import '../providers/renewals_provider.dart';
+import '../../data/models/renewal_model.dart';
+
+class PoliciesPage extends ConsumerStatefulWidget {
   const PoliciesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PoliciesPage> createState() => _PoliciesPageState();
+}
+
+class _PoliciesPageState extends ConsumerState<PoliciesPage> {
+  int _selectedTab = 0; // 0 = Policies, 1 = Renewals
+
+  @override
+  Widget build(BuildContext context) {
     final insurancesAsync = ref.watch(myInsurancesProvider);
+    final renewalsAsync = ref.watch(myRenewalsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(myInsurancesProvider),
+        onRefresh: () async {
+          if (_selectedTab == 0) {
+            ref.invalidate(myInsurancesProvider);
+          } else {
+            ref.invalidate(myRenewalsProvider);
+          }
+        },
         color: AppColors.primary,
         child: CustomScrollView(
           slivers: [
@@ -51,7 +68,9 @@ class PoliciesPage extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'policies.my_policies'.tr(),
+                                _selectedTab == 0
+                                    ? 'policies.my_policies'.tr()
+                                    : 'Policy Renewals',
                                 style: AppTextStyles.headlineMedium.copyWith(
                                   color: Colors.white,
                                 ),
@@ -85,29 +104,55 @@ class PoliciesPage extends ConsumerWidget {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          insurancesAsync.whenData((list) {
-                            final active = list
-                                .where((i) =>
-                                    i.status.toUpperCase() == 'ACTIVE')
-                                .length;
-                            return Row(
-                              children: [
-                                _HeroStat(
-                                  label: 'Total',
-                                  value: '${list.length}',
-                                  icon: Icons.shield_rounded,
-                                ),
-                                const SizedBox(width: 20),
-                                _HeroStat(
-                                  label: 'Active',
-                                  value: '$active',
-                                  icon: Icons.check_circle_outline_rounded,
-                                  valueColor: AppColors.success,
-                                ),
-                              ],
-                            );
-                          }).value ??
-                              const SizedBox.shrink(),
+                          if (_selectedTab == 0)
+                            insurancesAsync.whenData((list) {
+                              final active = list
+                                  .where((i) =>
+                                      i.status.toUpperCase() == 'ACTIVE')
+                                  .length;
+                              return Row(
+                                children: [
+                                  _HeroStat(
+                                    label: 'Total',
+                                    value: '${list.length}',
+                                    icon: Icons.shield_rounded,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _HeroStat(
+                                    label: 'Active',
+                                    value: '$active',
+                                    icon: Icons.check_circle_outline_rounded,
+                                    valueColor: AppColors.success,
+                                  ),
+                                ],
+                              );
+                            }).value ??
+                                const SizedBox.shrink()
+                          else
+                            renewalsAsync.whenData((list) {
+                              final pending = list
+                                  .where((r) =>
+                                      r.status.toUpperCase() == 'PENDING' ||
+                                      r.status.toUpperCase() == 'SUBMITTED')
+                                  .length;
+                              return Row(
+                                children: [
+                                  _HeroStat(
+                                    label: 'Total Renewals',
+                                    value: '${list.length}',
+                                    icon: Icons.autorenew_rounded,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _HeroStat(
+                                    label: 'Pending',
+                                    value: '$pending',
+                                    icon: Icons.hourglass_top_rounded,
+                                    valueColor: AppColors.accent,
+                                  ),
+                                ],
+                              );
+                            }).value ??
+                                const SizedBox.shrink(),
                         ],
                       ),
                     ),
@@ -116,42 +161,113 @@ class PoliciesPage extends ConsumerWidget {
               ),
             ),
 
+            // ── Tab switcher ─────────────────────────────────
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.lightBorder),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _SegmentTab(
+                        label: 'policies.my_policies'.tr(),
+                        icon: Icons.shield_rounded,
+                        count: insurancesAsync.value?.length,
+                        isSelected: _selectedTab == 0,
+                        onTap: () => setState(() => _selectedTab = 0),
+                      ),
+                    ),
+                    Expanded(
+                      child: _SegmentTab(
+                        label: 'Renewals',
+                        icon: Icons.autorenew_rounded,
+                        count: renewalsAsync.value?.length,
+                        isSelected: _selectedTab == 1,
+                        onTap: () => setState(() => _selectedTab = 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // ── List content ─────────────────────────────────
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-              sliver: insurancesAsync.when(
-                loading: () => const SliverToBoxAdapter(
-                    child: ShimmerList(itemHeight: 130)),
-                error: (e, _) => SliverToBoxAdapter(
-                  child: ErrorView(
-                    message: e.toString(),
-                    onRetry: () => ref.invalidate(myInsurancesProvider),
-                  ),
-                ),
-                data: (insurances) => insurances.isEmpty
-                    ? SliverToBoxAdapter(
-                        child: EmptyView(
-                          title: 'policies.no_policies'.tr(),
-                          subtitle:
-                              'Browse available policies to get started.',
-                          icon: Icons.shield_outlined,
-                          actionLabel: 'policies.browse_policies'.tr(),
-                          onAction: () => context.push('/policies/browse'),
-                        ),
-                      )
-                    : SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _InsuranceCard(
-                              insurance: insurances[index],
-                              index: index,
-                            ),
-                          ),
-                          childCount: insurances.length,
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 100),
+              sliver: _selectedTab == 0
+                  ? insurancesAsync.when(
+                      loading: () => const SliverToBoxAdapter(
+                          child: ShimmerList(itemHeight: 130)),
+                      error: (e, _) => SliverToBoxAdapter(
+                        child: ErrorView(
+                          message: e.toString(),
+                          onRetry: () => ref.invalidate(myInsurancesProvider),
                         ),
                       ),
-              ),
+                      data: (insurances) => insurances.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: EmptyView(
+                                title: 'policies.no_policies'.tr(),
+                                subtitle:
+                                    'Browse available policies to get started.',
+                                icon: Icons.shield_outlined,
+                                actionLabel: 'policies.browse_policies'.tr(),
+                                onAction: () =>
+                                    context.push('/policies/browse'),
+                              ),
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: _InsuranceCard(
+                                    insurance: insurances[index],
+                                    index: index,
+                                  ),
+                                ),
+                                childCount: insurances.length,
+                              ),
+                            ),
+                    )
+                  : renewalsAsync.when(
+                      loading: () => const SliverToBoxAdapter(
+                          child: ShimmerList(itemHeight: 130)),
+                      error: (e, _) => SliverToBoxAdapter(
+                        child: ErrorView(
+                          message: e.toString(),
+                          onRetry: () => ref.invalidate(myRenewalsProvider),
+                        ),
+                      ),
+                      data: (renewals) => renewals.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: EmptyView(
+                                title: 'No renewal requests',
+                                subtitle:
+                                    'You can request a renewal from any policy details page.',
+                                icon: Icons.autorenew_rounded,
+                                actionLabel: 'View Policies',
+                                onAction: () =>
+                                    setState(() => _selectedTab = 0),
+                              ),
+                            )
+                          : SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: _RenewalCard(
+                                    renewal: renewals[index],
+                                    index: index,
+                                  ),
+                                ),
+                                childCount: renewals.length,
+                              ),
+                            ),
+                    ),
             ),
           ],
         ),
@@ -432,3 +548,273 @@ class _Divider extends StatelessWidget {
     );
   }
 }
+
+// ── Segment Tab ────────────────────────────────────────────
+
+class _SegmentTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final int? count;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SegmentTab({
+    required this.label,
+    required this.icon,
+    this.count,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : AppColors.grey500,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: isSelected ? Colors.white : AppColors.grey600,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            if (count != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withOpacity(0.2)
+                      : AppColors.grey200,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: isSelected ? Colors.white : AppColors.grey600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Renewal Card ───────────────────────────────────────────
+
+class _RenewalCard extends StatelessWidget {
+  final RenewalModel renewal;
+  final int index;
+
+  const _RenewalCard({required this.renewal, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.lightBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header: Gradient banner ──────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.autorenew_rounded,
+                    color: AppColors.accent,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        renewal.renewalRef ?? 'Renewal #${renewal.id}',
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Policy #${renewal.insuranceNumber}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white60,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _DarkStatusChip(status: renewal.status),
+              ],
+            ),
+          ),
+
+          // ── Body: Financial metrics & timeline ───────────
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _InfoCell(
+                      label: 'NEW PREMIUM',
+                      value: AppFormatter.formatCurrency(renewal.newPremiumAmount),
+                      valueColor: AppColors.primary,
+                    ),
+                    _Divider(),
+                    _InfoCell(
+                      label: 'NEW SUM ASSURED',
+                      value: AppFormatter.formatCurrency(renewal.newSumAssured),
+                    ),
+                    _Divider(),
+                    _InfoCell(
+                      label: 'TERM',
+                      value: renewal.newPolicyTerm != null
+                          ? '${renewal.newPolicyTerm} mos'
+                          : '12 mos',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Divider(height: 1, color: AppColors.lightBorder),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded,
+                        size: 13, color: AppColors.grey400),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Dates: ${renewal.newStartDate ?? renewal.renewalDate ?? 'N/A'} → ${renewal.newEndDate ?? 'N/A'}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.grey500,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+                if (renewal.rejectionReason != null &&
+                    renewal.rejectionReason!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.error.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline_rounded,
+                            size: 16, color: AppColors.error),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Reason: ${renewal.rejectionReason}',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (renewal.adminNotes != null &&
+                    renewal.adminNotes!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Note: ${renewal.adminNotes}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.lightTextPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate()
+        .fadeIn(delay: (index * 50).ms, duration: 250.ms)
+        .slideY(begin: 0.06, duration: 250.ms);
+  }
+}
+

@@ -55,6 +55,34 @@ final policyByIdProvider =
   return PolicyModel.fromJson(payload);
 });
 
+// ── Policy Types / Categories ─────────────────────────────
+
+final policyTypesProvider = FutureProvider<List<PolicyTypeModel>>((ref) async {
+  final dio = getIt<Dio>();
+  final response = await dio.get(ApiEndpoints.portalPolicyTypes);
+  final data = response.data as Map<String, dynamic>;
+  final list = (data['data'] as List?) ?? [];
+  return list
+      .map((e) => PolicyTypeModel.fromJson(e as Map<String, dynamic>))
+      .where((t) => t.active)
+      .toList();
+});
+
+// ── Vehicle Policies ──────────────────────────────────────
+
+final vehiclePoliciesProvider = FutureProvider<List<PolicyModel>>((ref) async {
+  final dio = getIt<Dio>();
+  final response = await dio.get(ApiEndpoints.portalVehiclePolicies);
+  final data = response.data as Map<String, dynamic>;
+  final list = (data['data'] as List?) ?? [];
+  return list
+      .map((e) => PolicyModel.fromJson(e as Map<String, dynamic>))
+      .toList();
+});
+
+/// Filter selection: null = All, -1 = Vehicle, >0 = Category ID
+final selectedPolicyTypeIdProvider = StateProvider<int?>((ref) => null);
+
 // ── Search ────────────────────────────────────────────────
 
 final policySearchQueryProvider = StateProvider<String>((ref) => '');
