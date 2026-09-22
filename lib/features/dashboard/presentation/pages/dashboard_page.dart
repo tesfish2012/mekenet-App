@@ -108,11 +108,6 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
 
-            // ── Brand Footer ─────────────────────────────
-            const SliverToBoxAdapter(
-              child: _DashboardBrandFooter(),
-            ),
-
             const SliverToBoxAdapter(child: SizedBox(height: 28)),
           ],
         ),
@@ -316,11 +311,20 @@ class _DashboardHeader extends StatelessWidget {
 
 // ── Customer Stats Grid ───────────────────────────────────
 
-class _StatsGrid extends ConsumerWidget {
+class _StatsGrid extends ConsumerStatefulWidget {
   final dynamic stats;
   final List<PolicyTypeModel> policyTypes;
 
   const _StatsGrid({required this.stats, required this.policyTypes});
+
+  @override
+  ConsumerState<_StatsGrid> createState() => _StatsGridState();
+}
+
+class _StatsGridState extends ConsumerState<_StatsGrid> {
+  bool _expanded = false;
+
+  static const int _collapsedMax = 6;
 
   IconData _categoryIcon(String label) {
     final name = label.toLowerCase();
@@ -339,138 +343,205 @@ class _StatsGrid extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final statCards = [
-      StatsCard(
-        title: 'dashboard.active_policies'.tr(),
-        value: '${stats.activeInsurances}',
-        icon: Icons.shield_rounded,
-        color: AppColors.primary,
-        bgColor: AppColors.primaryContainer,
-      ),
-      StatsCard(
-        title: 'dashboard.pending_claims'.tr(),
-        value: '${stats.pendingClaims}',
-        icon: Icons.assignment_rounded,
-        color: AppColors.warning,
-        bgColor: AppColors.warningLight,
-      ),
-      StatsCard(
-        title: 'dashboard.total_premium'.tr(),
-        value: AppFormatter.formatCurrency(stats.totalPremium),
-        icon: Icons.payments_rounded,
-        color: AppColors.success,
-        bgColor: AppColors.successLight,
-        isSmallText: true,
-      ),
-      StatsCard(
-        title: 'Total Claims',
-        value: '${stats.totalClaims}',
-        icon: Icons.receipt_long_rounded,
-        color: AppColors.accent,
-        bgColor: AppColors.accentContainer,
-      ),
-    ];
+  Widget build(BuildContext context) {
+    final policyTypes = widget.policyTypes;
+    if (policyTypes.isEmpty) return const SizedBox.shrink();
+
+    final hasMore = policyTypes.length > _collapsedMax;
+    final visibleTypes =
+        _expanded ? policyTypes : policyTypes.take(_collapsedMax).toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Overview', style: AppTextStyles.titleLarge),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: statCards.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) => SizedBox(
-                width: 160,
-                child: statCards[index],
-              ),
-            ),
-          ),
-          if (policyTypes.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Text('Policy by Category', style: AppTextStyles.titleLarge),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${policyTypes.length} types',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
+          // ── Section header ─────────────────────────────
+          Row(
+            children: [
+              Text('Policy by Category', style: AppTextStyles.titleLarge),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${policyTypes.length} types',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: policyTypes.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final type = policyTypes[index];
-                  final isSelected = ref.watch(selectedPolicyTypeIdProvider) == type.id;
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
 
-                  return GestureDetector(
-                    onTap: () {
-                      final current = ref.read(selectedPolicyTypeIdProvider);
-                      ref.read(selectedPolicyTypeIdProvider.notifier).state =
-                          current == type.id ? null : type.id;
-                      ref.read(policySearchQueryProvider.notifier).state = '';
-                      context.push('/policies/browse');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primaryContainer
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.lightBorder,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _categoryIcon(type.name),
-                            size: 15,
-                            color: isSelected ? AppColors.primary : AppColors.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            type.name,
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.lightTextPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+          // ── Decorated 2-column grid ────────────────────
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 280),
+            crossFadeState:
+                _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            firstChild: _buildGrid(
+                policyTypes.take(_collapsedMax).toList(), context),
+            secondChild: _buildGrid(policyTypes, context),
+          ),
+
+          // ── Toggle button (only when >6 types) ────────
+          if (hasMore) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  color: _expanded
+                      ? AppColors.primaryContainer
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.lightBorder),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 280),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: AppColors.primary,
                       ),
                     ),
-                  );
-                },
+                    const SizedBox(width: 6),
+                    Text(
+                      _expanded
+                          ? 'Show Less'
+                          : 'See All  (+${policyTypes.length - _collapsedMax} more)',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildGrid(List<PolicyTypeModel> types, BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: types.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 2.6,
+      ),
+      itemBuilder: (context, index) {
+        final type = types[index];
+        final isSelected = ref.watch(selectedPolicyTypeIdProvider) == type.id;
+
+        return GestureDetector(
+          onTap: () {
+            final current = ref.read(selectedPolicyTypeIdProvider);
+            ref.read(selectedPolicyTypeIdProvider.notifier).state =
+                current == type.id ? null : type.id;
+            ref.read(policySearchQueryProvider.notifier).state = '';
+            context.push('/policies/browse');
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: AppColors.primaryGradient,
+                    )
+                  : null,
+              color: isSelected ? null : Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.lightBorder,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary
+                      .withOpacity(isSelected ? 0.18 : 0.05),
+                  blurRadius: isSelected ? 10 : 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.2)
+                        : AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(
+                    _categoryIcon(type.name),
+                    size: 16,
+                    color: isSelected ? Colors.white : AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        type.name,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.lightTextPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Tap to browse',
+                        style: AppTextStyles.caption.copyWith(
+                          color: isSelected
+                              ? Colors.white70
+                              : AppColors.grey500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 16,
+                  color: isSelected
+                      ? Colors.white70
+                      : AppColors.grey400,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -753,137 +824,4 @@ class _NoticesSection extends StatelessWidget {
   }
 }
 
-// ── Professional Brand Footer ─────────────────────────────
 
-class _DashboardBrandFooter extends StatelessWidget {
-  const _DashboardBrandFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: AppColors.primaryGradient,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.28),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.15),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.18),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(7),
-                child: Image.asset(
-                  AppConstants.logoAsset,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppConstants.appName,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      AppConstants.appTagline,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => context.push(AppConstants.routeSupport),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.primary,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                icon: const Icon(Icons.headset_mic_rounded, size: 16),
-                label: const Text(
-                  'Support',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Divider(color: Colors.white.withOpacity(0.18), height: 1),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.verified_user_rounded,
-                    size: 15,
-                    color: Color(0xFF60A5FA),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Licensed & Secure Insurer',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                'v${AppConstants.appVersion} • © 2026',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.white.withOpacity(0.65),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

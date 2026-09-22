@@ -21,11 +21,50 @@ class BrowsePoliciesPage extends ConsumerStatefulWidget {
 
 class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
   final _searchCtrl = TextEditingController();
+  final _chipScrollCtrl = ScrollController();
   bool _searchFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-scroll to the selected chip after first frame renders
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+  }
+
+  void _scrollToSelected() {
+    final selectedId = ref.read(selectedPolicyTypeIdProvider);
+    if (selectedId == null || !_chipScrollCtrl.hasClients) return;
+
+    final types = ref.read(policyTypesProvider).value ?? [];
+
+    // Slot 0 = "All", slot 1 = "Vehicle/Motor", then types start at slot 2
+    int chipIndex;
+    if (selectedId == -1) {
+      chipIndex = 1; // Vehicle/Motor
+    } else {
+      final typeIndex = types.indexWhere((t) => t.id == selectedId);
+      if (typeIndex < 0) return;
+      chipIndex = typeIndex + 2;
+    }
+
+    // Each chip is roughly 118px wide + 8px gap; bring it into the center
+    const chipWidth = 118.0;
+    const chipGap = 8.0;
+    final targetOffset = (chipIndex * (chipWidth + chipGap)) -
+        (_chipScrollCtrl.position.viewportDimension / 2) +
+        (chipWidth / 2);
+
+    _chipScrollCtrl.animateTo(
+      targetOffset.clamp(0.0, _chipScrollCtrl.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _chipScrollCtrl.dispose();
     super.dispose();
   }
 

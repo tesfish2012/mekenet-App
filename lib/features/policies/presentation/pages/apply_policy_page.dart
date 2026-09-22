@@ -2,9 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
-import '../../../../core/config/injectable_config.dart';
-import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -12,6 +9,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../providers/policies_provider.dart';
 import '../../data/models/policy_model.dart';
+import 'policy_payment_page.dart';
 
 class ApplyPolicyPage extends ConsumerStatefulWidget {
   final int policyId;
@@ -29,13 +27,11 @@ class ApplyPolicyPage extends ConsumerStatefulWidget {
 
 class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   final _formKey = GlobalKey<FormState>();
-  final _sumAssuredCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
   late int _selectedPricingIndex;
   late DateTime _startDate;
   late DateTime _endDate;
-  bool _isSubmitting = false;
   bool _agreedToTerms = false;
 
   @override
@@ -76,99 +72,62 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   }
 
   String _formatDate(DateTime d) {
-    return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return '${d.year.toString().padLeft(4, '0')}-'
+        '${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}';
   }
 
   @override
   void dispose() {
-    _sumAssuredCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _submit(PolicyModel policy) async {
+  void _continue(PolicyModel policy) {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please agree to the terms and conditions.'),
           backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    setState(() => _isSubmitting = true);
+    final pricing = policy.pricing.isNotEmpty &&
+            _selectedPricingIndex < policy.pricing.length
+        ? policy.pricing[_selectedPricingIndex]
+        : null;
 
-    try {
-      final pricing = policy.pricing.isNotEmpty &&
-              _selectedPricingIndex < policy.pricing.length
-          ? policy.pricing[_selectedPricingIndex]
-          : null;
+    final double amount = pricing != null
+        ? ((pricing['price'] as num?)?.toDouble() ?? policy.minPremium)
+        : policy.minPremium;
 
-      final double premiumAmount = pricing != null
-          ? ((pricing['price'] as num?)?.toDouble() ?? policy.minPremium)
-          : policy.minPremium;
+    final int months = pricing != null
+        ? ((pricing['months'] as num?)?.toInt() ?? 12)
+        : (policy.durationMonths > 0 ? policy.durationMonths : 12);
 
-      final int policyTerm = pricing != null
-          ? ((pricing['months'] as num?)?.toInt() ?? policy.durationMonths)
-          : (policy.durationMonths > 0 ? policy.durationMonths : 12);
+    final String planLabel = pricing != null
+        ? (pricing['termsDuration'] as String? ?? '$months months')
+        : (policy.durationMonths > 0 ? '${policy.durationMonths} months' : '12 months');
 
-      final double sumAssured = _sumAssuredCtrl.text.isNotEmpty
-          ? double.tryParse(_sumAssuredCtrl.text) ?? policy.sumAssuredDefault
-          : (policy.sumAssuredDefault > 0
-              ? policy.sumAssuredDefault
-              : policy.maxSumAssured);
-
-      final request = ApplyPolicyRequest(
+    context.push(
+      '/policies/payment',
+      extra: PolicyPaymentArgs(
         policyId: policy.id,
-        sumAssured: sumAssured,
-        premiumAmount: premiumAmount,
+        policyTitle: policy.title,
+        planLabel: planLabel,
+        amount: amount,
         startDate: _formatDate(_startDate),
         endDate: _formatDate(_endDate),
-        policyTerm: policyTerm,
-        statusLabel: 'PENDING',
+        policyTerm: months,
         notes: _notesCtrl.text.trim().isNotEmpty
             ? _notesCtrl.text.trim()
             : null,
-      );
-
-      final dio = getIt<Dio>();
-      await dio.post(
-        ApiEndpoints.portalInsurances,
-        data: request.toJson(),
-      );
-
-      if (mounted) {
-        // Invalidate my insurances so it refreshes
-        ref.invalidate(myInsurancesProvider);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Policy application submitted successfully!'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        // Go to my policies
-        context.go('/policies');
-      }
-    } on DioException catch (e) {
-      if (mounted) {
-        final msg = (e.response?.data as Map?)?['message'] as String? ??
-            e.message ??
-            'Submission failed. Please try again.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
+      ),
+    );
   }
 
   @override
@@ -191,8 +150,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
         ),
       ),
       body: policyAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (policy) => _buildForm(context, policy),
       ),
@@ -203,6 +161,10 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     final pricing = policy.pricing;
     final selectedTier =
         pricing.isNotEmpty ? pricing[_selectedPricingIndex] : null;
+
+    final double displayAmount = selectedTier != null
+        ? ((selectedTier['price'] as num?)?.toDouble() ?? policy.minPremium)
+        : policy.minPremium;
 
     return Form(
       key: _formKey,
@@ -256,8 +218,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                   onTap: () {
                     setState(() {
                       _selectedPricingIndex = i;
-                      final months = (tier['months'] as num?)?.toInt() ?? 12;
-                      _updateEndDate(months);
+                      final m = (tier['months'] as num?)?.toInt() ?? 12;
+                      _updateEndDate(m);
                     });
                   },
                   child: AnimatedContainer(
@@ -266,8 +228,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color:
-                          isSelected ? AppColors.primary : Colors.white,
+                      color: isSelected ? AppColors.primary : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
@@ -278,8 +239,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.primary
-                                    .withOpacity(0.2),
+                                color: AppColors.primary.withOpacity(0.2),
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
                               )
@@ -292,9 +252,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                           isSelected
                               ? Icons.radio_button_checked_rounded
                               : Icons.radio_button_off_rounded,
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.grey400,
+                          color:
+                              isSelected ? Colors.white : AppColors.grey400,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
@@ -309,6 +268,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                             ),
                           ),
                         ),
+                        // Amount read-only from policy — not editable
                         Text(
                           AppFormatter.formatCurrency(
                               (tier['price'] as num).toDouble()),
@@ -355,16 +315,12 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Start Date',
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.grey500),
-                          ),
+                          Text('Start Date',
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.grey500)),
                           const SizedBox(height: 2),
-                          Text(
-                            _formatDate(_startDate),
-                            style: AppTextStyles.titleSmall,
-                          ),
+                          Text(_formatDate(_startDate),
+                              style: AppTextStyles.titleSmall),
                         ],
                       ),
                     ),
@@ -375,16 +331,12 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'End Date',
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.grey500),
-                          ),
+                          Text('End Date',
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.grey500)),
                           const SizedBox(height: 2),
-                          Text(
-                            _formatDate(_endDate),
-                            style: AppTextStyles.titleSmall,
-                          ),
+                          Text(_formatDate(_endDate),
+                              style: AppTextStyles.titleSmall),
                         ],
                       ),
                     ),
@@ -396,35 +348,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             ),
             const SizedBox(height: 20),
 
-            // ── Sum Assured ───────────────────────────────
-            if (policy.maxSumAssured > 0) ...[
-              Text('Coverage Amount', style: AppTextStyles.titleMedium),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _sumAssuredCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Sum Assured (ETB)',
-                  hintText: policy.sumAssuredDefault > 0
-                      ? 'Default: ${AppFormatter.formatCurrency(policy.sumAssuredDefault)}'
-                      : 'Enter amount',
-                  prefixIcon: const Icon(Icons.attach_money_rounded),
-                ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return null; // optional
-                  final parsed = double.tryParse(v);
-                  if (parsed == null) return 'Enter a valid amount';
-                  if (policy.maxSumAssured > 0 &&
-                      parsed > policy.maxSumAssured) {
-                    return 'Max allowed: ${AppFormatter.formatCurrency(policy.maxSumAssured)}';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // ── Notes ─────────────────────────────────────
+            // ── Notes (optional) ──────────────────────────
             Text('Notes (optional)', style: AppTextStyles.titleMedium),
             const SizedBox(height: 10),
             TextFormField(
@@ -437,50 +361,36 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             ),
             const SizedBox(height: 20),
 
-            // ── Order summary ─────────────────────────────
+            // ── Order summary (read-only amounts) ─────────
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Summary',
-                      style: AppTextStyles.titleMedium),
+                  Text('Order Summary', style: AppTextStyles.titleMedium),
                   const SizedBox(height: 12),
-                  _SummaryRow(
-                    label: 'Policy',
-                    value: policy.title,
-                  ),
-                  if (selectedTier != null) ...[
+                  _SummaryRow(label: 'Policy', value: policy.title),
+                  if (selectedTier != null)
                     _SummaryRow(
                       label: 'Plan',
                       value: selectedTier['termsDuration'] as String? ??
                           '${selectedTier['months']} months',
                     ),
+                  _SummaryRow(
+                    label: 'Period',
+                    value: '${_formatDate(_startDate)} → ${_formatDate(_endDate)}',
+                  ),
+                  if (policy.sumAssuredDefault > 0)
                     _SummaryRow(
-                      label: 'Period',
-                      value:
-                          '${_formatDate(_startDate)} to ${_formatDate(_endDate)}',
-                    ),
-                    const Divider(height: 20),
-                    _SummaryRow(
-                      label: 'Premium',
+                      label: 'Sum Assured',
                       value: AppFormatter.formatCurrency(
-                          (selectedTier['price'] as num).toDouble()),
-                      isTotal: true,
+                          policy.sumAssuredDefault),
                     ),
-                  ] else ...[
-                    _SummaryRow(
-                      label: 'Period',
-                      value:
-                          '${_formatDate(_startDate)} to ${_formatDate(_endDate)}',
-                    ),
-                    const Divider(height: 20),
-                    _SummaryRow(
-                      label: 'Min Premium',
-                      value: AppFormatter.formatCurrency(
-                          policy.minPremium),
-                      isTotal: true,
-                    ),
-                  ],
+                  const Divider(height: 20),
+                  _SummaryRow(
+                    label: 'Premium Amount',
+                    value: AppFormatter.formatCurrency(displayAmount),
+                    isTotal: true,
+                  ),
                 ],
               ),
             ),
@@ -527,14 +437,12 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             ),
             const SizedBox(height: 28),
 
-            // ── Submit ────────────────────────────────────
+            // ── Continue → Payment page ───────────────────
             AppButton(
-              label: selectedTier != null
-                  ? 'Submit Application — ${AppFormatter.formatCurrency((selectedTier['price'] as num).toDouble())}'
-                  : 'Submit Application',
-              onPressed: _isSubmitting ? null : () => _submit(policy),
-              isLoading: _isSubmitting,
-              leadingIcon: Icons.send_rounded,
+              label:
+                  'Continue  —  ${AppFormatter.formatCurrency(displayAmount)}',
+              onPressed: () => _continue(policy),
+              leadingIcon: Icons.arrow_forward_rounded,
             ),
             const SizedBox(height: 12),
             AppButton(
@@ -549,6 +457,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     );
   }
 }
+
+// ── Summary row widget ────────────────────────────────────
 
 class _SummaryRow extends StatelessWidget {
   final String label;
@@ -569,8 +479,8 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.grey500),
+            style:
+                AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
           ),
           const Spacer(),
           Text(

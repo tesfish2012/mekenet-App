@@ -29,6 +29,7 @@ import '../../features/policies/presentation/pages/policies_page.dart';
 import '../../features/policies/presentation/pages/policy_detail_page.dart';
 import '../../features/policies/presentation/pages/browse_policy_detail_page.dart';
 import '../../features/policies/presentation/pages/apply_policy_page.dart';
+import '../../features/policies/presentation/pages/policy_payment_page.dart';
 import '../../features/policies/presentation/pages/browse_policies_page.dart';
 import '../../features/policies/presentation/pages/digital_card_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -287,6 +288,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             policyId: id,
             selectedPricingIndex: pricingIndex,
           );
+        },
+      ),
+      GoRoute(
+        path: '/policies/payment',
+        name: 'policy-payment',
+        builder: (context, state) {
+          final args = state.extra as PolicyPaymentArgs?;
+          if (args == null) {
+            return const Scaffold(
+              body: Center(child: Text('Invalid payment session.')),
+            );
+          }
+          return PolicyPaymentPage(args: args);
         },
       ),
       GoRoute(
