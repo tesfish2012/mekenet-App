@@ -47,7 +47,10 @@ class PolicyDetailPage extends ConsumerWidget {
       body: insuranceAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => ErrorView(message: e.toString()),
-        data: (insurance) => SingleChildScrollView(
+        data: (insurance) {
+          final isActive = insurance.status.toUpperCase() == 'ACTIVE';
+
+          return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,8 +127,9 @@ class PolicyDetailPage extends ConsumerWidget {
                   Expanded(
                     child: AppButton(
                       label: 'New Claim',
-                      onPressed: () => context.push('/claims/new?insuranceId=$policyId'),
+                      onPressed: isActive ? () => context.push('/claims/new?insuranceId=$policyId') : null,
                       leadingIcon: Icons.add_rounded,
+                      isDisabled: !isActive,
                     ),
                   ),
                 ],
@@ -133,9 +137,10 @@ class PolicyDetailPage extends ConsumerWidget {
               const SizedBox(height: 12),
               AppButton(
                 label: 'Request Renewal',
-                onPressed: () => _showRenewalModal(context, insurance),
+                onPressed: isActive ? () => _showRenewalModal(context, insurance) : null,
                 leadingIcon: Icons.autorenew_rounded,
                 variant: AppButtonVariant.primary,
+                isDisabled: !isActive,
               ),
               const SizedBox(height: 12),
               AppButton(
@@ -146,7 +151,8 @@ class PolicyDetailPage extends ConsumerWidget {
               ),
             ],
           ),
-        ),
+        );
+        },
       ),
     );
   }

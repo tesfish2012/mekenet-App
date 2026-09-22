@@ -21,14 +21,30 @@ class CustomerStatsModel {
 
   factory CustomerStatsModel.fromJson(Map<String, dynamic> json) {
     return CustomerStatsModel(
-      totalInsurances: _toInt(json['totalInsurances']),
-      activeInsurances: _toInt(json['activeInsurances']),
-      pendingInsurances: _toInt(json['pendingInsurances']),
-      expiredInsurances: _toInt(json['expiredInsurances']),
-      totalClaims: _toInt(json['totalClaims']),
-      pendingClaims: _toInt(json['pendingClaims']),
-      approvedClaims: _toInt(json['approvedClaims']),
-      totalPremium: _toDouble(json['totalPremium']),
+      totalInsurances: _toInt(
+        json['totalInsurances'] ?? json['myInsurances'] ?? json['insurancesCount'],
+      ),
+      activeInsurances: _toInt(
+        json['activeInsurances'] ?? json['activePolicies'],
+      ),
+      pendingInsurances: _toInt(
+        json['pendingInsurances'] ?? json['pendingPolicies'],
+      ),
+      expiredInsurances: _toInt(
+        json['expiredInsurances'] ?? json['expiredPolicies'],
+      ),
+      totalClaims: _toInt(
+        json['totalClaims'] ?? json['myClaims'] ?? json['claimsCount'],
+      ),
+      pendingClaims: _toInt(
+        json['pendingClaims'] ?? json['pendingClaimsCount'],
+      ),
+      approvedClaims: _toInt(
+        json['approvedClaims'] ?? json['approvedClaimsCount'],
+      ),
+      totalPremium: _toDouble(
+        json['totalPremium'] ?? json['premiumTotal'],
+      ),
     );
   }
 

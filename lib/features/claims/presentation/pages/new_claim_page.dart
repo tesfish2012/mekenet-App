@@ -10,6 +10,7 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../providers/claims_provider.dart';
+import '../../../policies/data/models/policy_model.dart';
 import '../../../policies/presentation/providers/policies_provider.dart';
 
 class NewClaimPage extends ConsumerStatefulWidget {
@@ -61,6 +62,28 @@ class _NewClaimPageState extends ConsumerState<NewClaimPage> {
     if (_selectedInsuranceId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a policy')),
+      );
+      return;
+    }
+
+    final insurances = ref.read(myInsurancesProvider).value ?? const <InsuranceModel>[];
+    final selected = insurances.firstWhere(
+      (item) => item.id == _selectedInsuranceId,
+      orElse: () => const InsuranceModel(
+        id: -1,
+        policyTitle: '',
+        insuranceNumber: '',
+        status: 'INACTIVE',
+        premiumAmount: 0,
+        sumAssured: 0,
+        startDate: '',
+        endDate: '',
+      ),
+    );
+
+    if (selected.id == -1 || selected.status.toUpperCase() != 'ACTIVE') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selected policy is not active. Please select an active policy.')),
       );
       return;
     }
