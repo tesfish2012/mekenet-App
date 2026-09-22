@@ -74,7 +74,13 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
             backgroundColor: AppColors.secondary,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-              onPressed: () => context.pop(),
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/dashboard');
+                }
+              },
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
