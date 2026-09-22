@@ -7,6 +7,8 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/broker/presentation/pages/broker_dashboard_page.dart';
+import '../../../../features/policies/data/models/policy_model.dart';
+import '../../../../features/policies/presentation/providers/policies_provider.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_card.dart';
@@ -33,6 +35,7 @@ class DashboardPage extends ConsumerWidget {
         isAgentOrBroker ? null : ref.watch(customerStatsProvider);
     final agentStatsAsync =
         isAgentOrBroker ? ref.watch(agentStatsProvider) : null;
+    final policyTypes = ref.watch(policyTypesProvider).value ?? const <PolicyTypeModel>[];
     final noticesAsync = ref.watch(latestNoticesProvider);
 
     return Scaffold(
@@ -74,7 +77,10 @@ class DashboardPage extends ConsumerWidget {
                       ),
                     )
                   : customerStatsAsync!.when(
-                      data: (stats) => _StatsGrid(stats: stats),
+                      data: (stats) => _StatsGrid(
+                        stats: stats,
+                        policyTypes: policyTypes,
+                      ),
                       loading: () => const Padding(
                         padding: EdgeInsets.all(16),
                         child: LoadingView(),
@@ -310,13 +316,62 @@ class _DashboardHeader extends StatelessWidget {
 
 // ── Customer Stats Grid ───────────────────────────────────
 
-class _StatsGrid extends StatelessWidget {
+class _StatsGrid extends ConsumerWidget {
   final dynamic stats;
+  final List<PolicyTypeModel> policyTypes;
 
-  const _StatsGrid({required this.stats});
+  const _StatsGrid({required this.stats, required this.policyTypes});
+
+  IconData _categoryIcon(String label) {
+    final name = label.toLowerCase();
+    if (name.contains('vehicle') || name.contains('motor') || name.contains('car')) {
+      return Icons.directions_car_rounded;
+    }
+    if (name.contains('life')) return Icons.favorite_rounded;
+    if (name.contains('health') || name.contains('medical')) {
+      return Icons.local_hospital_rounded;
+    }
+    if (name.contains('travel')) return Icons.flight_rounded;
+    if (name.contains('home') || name.contains('property')) {
+      return Icons.home_rounded;
+    }
+    return Icons.shield_rounded;
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statCards = [
+      StatsCard(
+        title: 'dashboard.active_policies'.tr(),
+        value: '${stats.activeInsurances}',
+        icon: Icons.shield_rounded,
+        color: AppColors.primary,
+        bgColor: AppColors.primaryContainer,
+      ),
+      StatsCard(
+        title: 'dashboard.pending_claims'.tr(),
+        value: '${stats.pendingClaims}',
+        icon: Icons.assignment_rounded,
+        color: AppColors.warning,
+        bgColor: AppColors.warningLight,
+      ),
+      StatsCard(
+        title: 'dashboard.total_premium'.tr(),
+        value: AppFormatter.formatCurrency(stats.totalPremium),
+        icon: Icons.payments_rounded,
+        color: AppColors.success,
+        bgColor: AppColors.successLight,
+        isSmallText: true,
+      ),
+      StatsCard(
+        title: 'Total Claims',
+        value: '${stats.totalClaims}',
+        icon: Icons.receipt_long_rounded,
+        color: AppColors.accent,
+        bgColor: AppColors.accentContainer,
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Column(
@@ -324,45 +379,96 @@ class _StatsGrid extends StatelessWidget {
         children: [
           Text('Overview', style: AppTextStyles.titleLarge),
           const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.4,
-            children: [
-              StatsCard(
-                title: 'dashboard.active_policies'.tr(),
-                value: '${stats.activeInsurances}',
-                icon: Icons.shield_rounded,
-                color: AppColors.primary,
-                bgColor: AppColors.primaryContainer,
-              ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2),
-              StatsCard(
-                title: 'dashboard.pending_claims'.tr(),
-                value: '${stats.pendingClaims}',
-                icon: Icons.assignment_rounded,
-                color: AppColors.warning,
-                bgColor: AppColors.warningLight,
-              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
-              StatsCard(
-                title: 'dashboard.total_premium'.tr(),
-                value: AppFormatter.formatCurrency(stats.totalPremium),
-                icon: Icons.payments_rounded,
-                color: AppColors.success,
-                bgColor: AppColors.successLight,
-                isSmallText: true,
-              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
-              StatsCard(
-                title: 'Total Claims',
-                value: '${stats.totalClaims}',
-                icon: Icons.receipt_long_rounded,
-                color: AppColors.accent,
-                bgColor: AppColors.accentContainer,
-              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
-            ],
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: statCards.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) => SizedBox(
+                width: 160,
+                child: statCards[index],
+              ),
+            ),
           ),
+          if (policyTypes.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Text('Policy by Category', style: AppTextStyles.titleLarge),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${policyTypes.length} types',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 38,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: policyTypes.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final type = policyTypes[index];
+                  final isSelected = ref.watch(selectedPolicyTypeIdProvider) == type.id;
+
+                  return GestureDetector(
+                    onTap: () {
+                      final current = ref.read(selectedPolicyTypeIdProvider);
+                      ref.read(selectedPolicyTypeIdProvider.notifier).state =
+                          current == type.id ? null : type.id;
+                      ref.read(policySearchQueryProvider.notifier).state = '';
+                      context.push('/policies/browse');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primaryContainer
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.lightBorder,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _categoryIcon(type.name),
+                            size: 15,
+                            color: isSelected ? AppColors.primary : AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            type.name,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.lightTextPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );
