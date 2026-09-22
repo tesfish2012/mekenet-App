@@ -33,6 +33,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   final _notesCtrl = TextEditingController();
 
   late int _selectedPricingIndex;
+  late DateTime _startDate;
+  late DateTime _endDate;
   bool _isSubmitting = false;
   bool _agreedToTerms = false;
 
@@ -40,6 +42,41 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   void initState() {
     super.initState();
     _selectedPricingIndex = widget.selectedPricingIndex ?? 0;
+    _startDate = DateTime.now();
+    _endDate = DateTime(_startDate.year + 1, _startDate.month, _startDate.day);
+  }
+
+  void _updateEndDate(int months) {
+    setState(() {
+      _endDate = DateTime(
+        _startDate.year,
+        _startDate.month + months,
+        _startDate.day,
+      );
+    });
+  }
+
+  Future<void> _pickStartDate(int months) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (picked != null) {
+      setState(() {
+        _startDate = picked;
+        _endDate = DateTime(
+          picked.year,
+          picked.month + (months > 0 ? months : 12),
+          picked.day,
+        );
+      });
+    }
+  }
+
+  String _formatDate(DateTime d) {
+    return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -64,23 +101,43 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      final pricing = policy.pricing.isNotEmpty
+      final pricing = policy.pricing.isNotEmpty &&
+              _selectedPricingIndex < policy.pricing.length
           ? policy.pricing[_selectedPricingIndex]
           : null;
+
+      final double premiumAmount = pricing != null
+          ? ((pricing['price'] as num?)?.toDouble() ?? policy.minPremium)
+          : policy.minPremium;
+
+      final int policyTerm = pricing != null
+          ? ((pricing['months'] as num?)?.toInt() ?? policy.durationMonths)
+          : (policy.durationMonths > 0 ? policy.durationMonths : 12);
+
+      final double sumAssured = _sumAssuredCtrl.text.isNotEmpty
+          ? double.tryParse(_sumAssuredCtrl.text) ?? policy.sumAssuredDefault
+          : (policy.sumAssuredDefault > 0
+              ? policy.sumAssuredDefault
+              : policy.maxSumAssured);
+
+      final request = ApplyPolicyRequest(
+        customerId: 0,
+        policyId: policy.id,
+        agentId: 0,
+        agentCommission: policy.agentCommissionPercent,
+        sumAssured: sumAssured,
+        premiumAmount: premiumAmount,
+        startDate: _formatDate(_startDate),
+        endDate: _formatDate(_endDate),
+        policyTerm: policyTerm,
+        statusLabel: 'PENDING',
+        notes: _notesCtrl.text.trim(),
+      );
 
       final dio = getIt<Dio>();
       await dio.post(
         ApiEndpoints.portalInsurances,
-        data: {
-          'policyId': policy.id,
-          'sumAssured': _sumAssuredCtrl.text.isNotEmpty
-              ? double.tryParse(_sumAssuredCtrl.text) ??
-                  policy.sumAssuredDefault
-              : policy.sumAssuredDefault,
-          if (pricing != null) 'policyTerm': pricing['months'],
-          if (pricing != null) 'premiumAmount': pricing['price'],
-          if (_notesCtrl.text.isNotEmpty) 'notes': _notesCtrl.text,
-        },
+        data: request.toJson(),
       );
 
       if (mounted) {
@@ -88,9 +145,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
         ref.invalidate(myInsurancesProvider);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-                'Policy application submitted successfully!'),
+          const SnackBar(
+            content: Text('Policy application submitted successfully!'),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
           ),
@@ -198,8 +254,13 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                 final tier = entry.value;
                 final isSelected = _selectedPricingIndex == i;
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _selectedPricingIndex = i),
+                  onTap: () {
+                    setState(() {
+                      _selectedPricingIndex = i;
+                      final months = (tier['months'] as num?)?.toInt() ?? 12;
+                      _updateEndDate(months);
+                    });
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
                     margin: const EdgeInsets.only(bottom: 8),
@@ -267,6 +328,75 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
               const SizedBox(height: 20),
             ],
 
+            // ── Coverage Period ───────────────────────────
+            Text('Coverage Period', style: AppTextStyles.titleMedium),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () {
+                final months = selectedTier != null
+                    ? ((selectedTier['months'] as num?)?.toInt() ?? 12)
+                    : (policy.durationMonths > 0 ? policy.durationMonths : 12);
+                _pickStartDate(months);
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.lightBorder),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_month_rounded,
+                        size: 22, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Start Date',
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: AppColors.grey500),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatDate(_startDate),
+                            style: AppTextStyles.titleSmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_rounded,
+                        size: 16, color: AppColors.grey400),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'End Date',
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: AppColors.grey500),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatDate(_endDate),
+                            style: AppTextStyles.titleSmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.edit_calendar_rounded,
+                        size: 18, color: AppColors.grey400),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
             // ── Sum Assured ───────────────────────────────
             if (policy.maxSumAssured > 0) ...[
               Text('Coverage Amount', style: AppTextStyles.titleMedium),
@@ -326,6 +456,11 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                       value: selectedTier['termsDuration'] as String? ??
                           '${selectedTier['months']} months',
                     ),
+                    _SummaryRow(
+                      label: 'Period',
+                      value:
+                          '${_formatDate(_startDate)} to ${_formatDate(_endDate)}',
+                    ),
                     const Divider(height: 20),
                     _SummaryRow(
                       label: 'Premium',
@@ -333,13 +468,20 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                           (selectedTier['price'] as num).toDouble()),
                       isTotal: true,
                     ),
-                  ] else
+                  ] else ...[
+                    _SummaryRow(
+                      label: 'Period',
+                      value:
+                          '${_formatDate(_startDate)} to ${_formatDate(_endDate)}',
+                    ),
+                    const Divider(height: 20),
                     _SummaryRow(
                       label: 'Min Premium',
                       value: AppFormatter.formatCurrency(
                           policy.minPremium),
                       isTotal: true,
                     ),
+                  ],
                 ],
               ),
             ),

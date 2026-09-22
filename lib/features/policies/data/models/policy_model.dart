@@ -178,3 +178,61 @@ class InsuranceModel {
   static double _toDouble(dynamic v) =>
       v == null ? 0.0 : (v is double ? v : double.tryParse(v.toString()) ?? 0.0);
 }
+
+/// Request payload for applying for a policy (POST /portal/insurances)
+class ApplyPolicyRequest {
+  final int? customerId;
+  final int policyId;
+  final int? agentId;
+  final double? agentCommission;
+  final double sumAssured;
+  final double premiumAmount;
+  final String startDate;
+  final String endDate;
+  final int policyTerm;
+  final String statusLabel;
+  final String? notes;
+
+  const ApplyPolicyRequest({
+    this.customerId,
+    required this.policyId,
+    this.agentId,
+    this.agentCommission,
+    required this.sumAssured,
+    required this.premiumAmount,
+    required this.startDate,
+    required this.endDate,
+    this.policyTerm = 0,
+    this.statusLabel = 'PENDING',
+    this.notes,
+  });
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'policyId': policyId,
+      'sumAssured': sumAssured,
+      'premiumAmount': premiumAmount,
+      'startDate': startDate,
+      'endDate': endDate,
+      'policyTerm': policyTerm,
+      'statusLabel': statusLabel,
+    };
+
+    if (customerId != null && customerId! > 0) {
+      map['customerId'] = customerId;
+    }
+    if (agentId != null && agentId! > 0) {
+      map['agentId'] = agentId;
+    }
+    if (agentCommission != null && agentCommission! > 0) {
+      map['agentCommission'] = agentCommission;
+    }
+    if (notes != null && notes!.isNotEmpty) {
+      map['notes'] = notes;
+    }
+
+    return map;
+  }
+}
+
+
