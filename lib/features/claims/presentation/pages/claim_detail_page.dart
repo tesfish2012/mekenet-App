@@ -263,6 +263,7 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true,
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() => _selectedFile = result.files.single);
@@ -270,11 +271,16 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
   }
 
   Future<void> _upload() async {
-    if (_selectedDocType == null ||
-        _selectedFile == null ||
-        _selectedFile!.path == null) {
+    if (_selectedDocType == null || _selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select document type and a file')),
+      );
+      return;
+    }
+    if (_selectedFile!.bytes == null && _selectedFile!.path == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('File data could not be read. Please choose another file.')),
       );
       return;
     }
@@ -282,7 +288,8 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
     final success = await ref.read(uploadClaimDocumentProvider.notifier).upload(
           claimId: widget.claimId,
           documentType: _selectedDocType!,
-          filePath: _selectedFile!.path!,
+          filePath: _selectedFile!.path,
+          fileBytes: _selectedFile!.bytes,
           fileName: _selectedFile!.name,
         );
 

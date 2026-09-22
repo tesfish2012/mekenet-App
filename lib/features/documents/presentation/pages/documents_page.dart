@@ -174,8 +174,9 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true,
     );
-    if (result != null) {
+    if (result != null && result.files.isNotEmpty) {
       setState(() => _selectedFile = result.files.single);
     }
   }
@@ -193,7 +194,8 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
     final success = await ref.read(uploadDocumentProvider.notifier).upload(
           insuranceId: _selectedInsuranceId!,
           documentType: _selectedDocType!,
-          filePath: _selectedFile!.path!,
+          filePath: _selectedFile!.path,
+          fileBytes: _selectedFile!.bytes,
           fileName: _selectedFile!.name,
         );
 

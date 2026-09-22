@@ -50,14 +50,25 @@ class UploadDocumentNotifier extends AutoDisposeAsyncNotifier<void> {
   Future<bool> upload({
     required int insuranceId,
     required String documentType,
-    required String filePath,
+    String? filePath,
+    List<int>? fileBytes,
     required String fileName,
   }) async {
     state = const AsyncLoading();
     try {
       final dio = getIt<Dio>();
+      final MultipartFile multipartFile;
+      if (fileBytes != null && fileBytes.isNotEmpty) {
+        multipartFile = MultipartFile.fromBytes(fileBytes, filename: fileName);
+      } else if (filePath != null) {
+        multipartFile = await MultipartFile.fromFile(filePath, filename: fileName);
+      } else {
+        throw Exception('No file data provided');
+      }
+
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath, filename: fileName),
+        'file': multipartFile,
+        'documentType': documentType,
       });
       await dio.post(
         '${ApiEndpoints.insuranceDocuments(insuranceId)}?documentType=$documentType',
