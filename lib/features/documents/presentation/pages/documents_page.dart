@@ -54,8 +54,17 @@ class DocumentsPage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showUploadSheet(context, ref),
-        icon: const Icon(Icons.upload_rounded),
-        label: Text('documents.upload_document'.tr()),
+        icon: const Icon(Icons.upload_rounded, color: Colors.white),
+        label: Text(
+          'documents.upload_document'.tr(),
+          style: AppTextStyles.labelLarge.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        shape: const StadiumBorder(),
+        backgroundColor: AppColors.primary,
+        elevation: 4,
       ),
     );
   }
@@ -237,6 +246,7 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => const Text('Error loading policies'),
             data: (insurances) => DropdownButtonFormField<int>(
+              isExpanded: true,
               value: _selectedInsuranceId,
               hint: const Text('Choose policy'),
               decoration: const InputDecoration(),
@@ -245,6 +255,7 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
                         value: i.id,
                         child: Text(
                           '${i.policyTitle} (${i.insuranceNumber})',
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ))

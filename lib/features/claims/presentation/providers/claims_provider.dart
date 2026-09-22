@@ -72,3 +72,60 @@ final submitClaimProvider =
     AutoDisposeAsyncNotifierProvider<SubmitClaimNotifier, void>(
   SubmitClaimNotifier.new,
 );
+
+// ── Claim Documents ───────────────────────────────────────
+
+final claimDocumentsProvider =
+    FutureProvider.family<List<ClaimDocumentModel>, int>((ref, claimId) async {
+  final dio = getIt<Dio>();
+  try {
+    final response = await dio.get(ApiEndpoints.claimDocuments(claimId));
+    final data = response.data as Map<String, dynamic>;
+    final payload = data['data'];
+    final List<dynamic> list = payload is List
+        ? payload
+        : (payload is Map ? (payload['content'] as List? ?? []) : []);
+    return list
+        .map((e) => ClaimDocumentModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  } catch (_) {
+    return [];
+  }
+});
+
+class UploadClaimDocumentNotifier extends AutoDisposeAsyncNotifier<void> {
+  @override
+  FutureOr<void> build() {}
+
+  Future<bool> upload({
+    required int claimId,
+    required String documentType,
+    required String filePath,
+    required String fileName,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      final dio = getIt<Dio>();
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath, filename: fileName),
+        'documentType': documentType,
+      });
+      await dio.post(
+        '${ApiEndpoints.claimDocuments(claimId)}?documentType=$documentType',
+        data: formData,
+      );
+      ref.invalidate(claimDocumentsProvider(claimId));
+      state = const AsyncData(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    }
+  }
+}
+
+final uploadClaimDocumentProvider =
+    AutoDisposeAsyncNotifierProvider<UploadClaimDocumentNotifier, void>(
+  UploadClaimDocumentNotifier.new,
+);
+

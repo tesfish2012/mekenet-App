@@ -124,6 +124,7 @@ class _NewClaimPageState extends ConsumerState<NewClaimPage> {
                     loading: () => const CircularProgressIndicator(),
                     error: (_, __) => const Text('Error loading policies'),
                     data: (insurances) => DropdownButtonFormField<int>(
+                      isExpanded: true,
                       value: _selectedInsuranceId,
                       hint: const Text('Choose a policy'),
                       decoration: const InputDecoration(),
@@ -133,6 +134,7 @@ class _NewClaimPageState extends ConsumerState<NewClaimPage> {
                                 value: i.id,
                                 child: Text(
                                   '${i.policyTitle} • ${i.insuranceNumber}',
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ))

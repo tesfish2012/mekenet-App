@@ -78,3 +78,39 @@ class NewClaimRequest {
         'description': description,
       };
 }
+
+class ClaimDocumentModel {
+  final int id;
+  final int claimId;
+  final String documentType;
+  final String filePath;
+  final String? originalName;
+  final int? fileSize;
+  final String status;
+  final String? createdAt;
+
+  const ClaimDocumentModel({
+    required this.id,
+    this.claimId = 0,
+    this.documentType = '',
+    this.filePath = '',
+    this.originalName,
+    this.fileSize,
+    this.status = 'PENDING',
+    this.createdAt,
+  });
+
+  factory ClaimDocumentModel.fromJson(Map<String, dynamic> json) {
+    return ClaimDocumentModel(
+      id: json['id'] as int? ?? 0,
+      claimId: json['claimId'] as int? ?? 0,
+      documentType: json['documentType'] as String? ?? '',
+      filePath: json['filePath'] as String? ?? '',
+      originalName: json['originalName'] as String?,
+      fileSize: json['fileSize'] as int?,
+      status: json['status'] as String? ?? 'PENDING',
+      createdAt: json['createdAt'] as String?,
+    );
+  }
+}
+

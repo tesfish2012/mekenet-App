@@ -52,8 +52,17 @@ class ClaimsPage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/claims/new'),
-        icon: const Icon(Icons.add_rounded),
-        label: Text('claims.new_claim'.tr()),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text(
+          'claims.new_claim'.tr(),
+          style: AppTextStyles.labelLarge.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        shape: const StadiumBorder(),
+        backgroundColor: AppColors.primary,
+        elevation: 4,
       ),
     );
   }

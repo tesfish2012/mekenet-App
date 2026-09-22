@@ -47,6 +47,7 @@ class _BrokerEndorsementsPageState
       fab: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        shape: const StadiumBorder(),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New Request'),
         onPressed: () => setState(() => _showForm = true),
@@ -351,6 +352,7 @@ class _EndorsementFormSheetState
 
                       // Request Type (from payload: requestType)
                       DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: _requestType,
                         decoration: InputDecoration(
                           labelText: 'Request Type *',

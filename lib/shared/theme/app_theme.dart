@@ -187,7 +187,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 4,
-          shape: CircleBorder(),
+          shape: StadiumBorder(),
         ),
         textTheme: TextTheme(
           displayLarge: AppTextStyles.displayLarge.copyWith(color: AppColors.lightTextPrimary),
