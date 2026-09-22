@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._();
 
   // App Info
-  static const String appName = 'Mekenet Insurance';
+  static const String appName = 'Mekenet';
   static const String appVersion = '1.0.0';
   static const String packageName = 'com.mekenetinsurance.mobile';
   static const String logoAsset = 'assets/images/logo.png';

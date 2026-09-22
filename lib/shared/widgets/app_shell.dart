@@ -88,23 +88,31 @@ class _NavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.accent,
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFBB03B),
+            Color(0xFFF5A623),
+          ],
+        ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.12),
-            width: 1,
+            color: const Color(0xFFD4891A).withOpacity(0.45),
+            width: 1.2,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.4),
-            blurRadius: 24,
+            color: const Color(0xFFD4891A).withOpacity(0.35),
+            blurRadius: 20,
             offset: const Offset(0, -6),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
             offset: const Offset(0, -2),
           ),
         ],
@@ -149,8 +157,8 @@ class _NavButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: Colors.white.withOpacity(0.12),
-        highlightColor: Colors.white.withOpacity(0.06),
+        splashColor: AppColors.primary.withOpacity(0.15),
+        highlightColor: AppColors.primary.withOpacity(0.08),
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -164,22 +172,25 @@ class _NavButton extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.18)
+                    ? AppColors.primary
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                border: isSelected
-                    ? Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      )
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.28),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
                     : null,
               ),
               child: Icon(
                 item.icon,
-                size: 22,
+                size: 21,
                 color: isSelected
                     ? Colors.white
-                    : Colors.white.withOpacity(0.55),
+                    : AppColors.primary.withOpacity(0.72),
               ),
             ),
             const SizedBox(height: 3),
@@ -187,10 +198,10 @@ class _NavButton extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               style: TextStyle(
                 fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected
-                    ? Colors.white
-                    : Colors.white.withOpacity(0.65),
+                    ? AppColors.primary
+                    : AppColors.primary.withOpacity(0.72),
                 letterSpacing: isSelected ? 0.2 : 0,
               ),
               child: Text(
@@ -206,7 +217,7 @@ class _NavButton extends StatelessWidget {
               width: isSelected ? 14 : 0,
               height: 2.5,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.accent : Colors.transparent,
+                color: isSelected ? AppColors.primary : Colors.transparent,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
