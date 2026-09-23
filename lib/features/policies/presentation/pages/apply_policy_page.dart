@@ -71,6 +71,18 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     }
   }
 
+  Future<void> _pickEndDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate,
+      firstDate: _startDate.add(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+    );
+    if (picked != null) {
+      setState(() => _endDate = picked);
+    }
+  }
+
   String _formatDate(DateTime d) {
     return '${d.year.toString().padLeft(4, '0')}-'
         '${d.month.toString().padLeft(2, '0')}-'
@@ -120,6 +132,9 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
         policyTitle: policy.title,
         planLabel: planLabel,
         amount: amount,
+        sumAssured: policy.sumAssuredDefault > 0
+            ? policy.sumAssuredDefault
+            : policy.maxSumAssured,
         startDate: _formatDate(_startDate),
         endDate: _formatDate(_endDate),
         policyTerm: months,
@@ -290,61 +305,93 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             // ── Coverage Period ───────────────────────────
             Text('Coverage Period', style: AppTextStyles.titleMedium),
             const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                final months = selectedTier != null
-                    ? ((selectedTier['months'] as num?)?.toInt() ?? 12)
-                    : (policy.durationMonths > 0 ? policy.durationMonths : 12);
-                _pickStartDate(months);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.lightBorder),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_month_rounded,
-                        size: 22, color: AppColors.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
+            Row(
+              children: [
+                // Start Date
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      final months = selectedTier != null
+                          ? ((selectedTier['months'] as num?)?.toInt() ?? 12)
+                          : (policy.durationMonths > 0
+                              ? policy.durationMonths
+                              : 12);
+                      _pickStartDate(months);
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.lightBorder),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Start Date',
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.grey500)),
-                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded,
+                                  size: 14, color: AppColors.primary),
+                              const SizedBox(width: 6),
+                              Text('Start Date',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.grey500)),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
                           Text(_formatDate(_startDate),
                               style: AppTextStyles.titleSmall),
+                          const SizedBox(height: 4),
+                          Text('Tap to change',
+                              style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primary)),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_rounded,
-                        size: 16, color: AppColors.grey400),
-                    const SizedBox(width: 12),
-                    Expanded(
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // End Date
+                Expanded(
+                  child: InkWell(
+                    onTap: _pickEndDate,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.primary),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('End Date',
-                              style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.grey500)),
-                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(Icons.event_rounded,
+                                  size: 14, color: AppColors.primary),
+                              const SizedBox(width: 6),
+                              Text('End Date',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.grey500)),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
                           Text(_formatDate(_endDate),
                               style: AppTextStyles.titleSmall),
+                          const SizedBox(height: 4),
+                          Text('Tap to change',
+                              style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primary)),
                         ],
                       ),
                     ),
-                    const Icon(Icons.edit_calendar_rounded,
-                        size: 18, color: AppColors.grey400),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 20),
 

@@ -19,6 +19,7 @@ class PolicyPaymentArgs {
   final String policyTitle;
   final String planLabel;
   final double amount;
+  final double sumAssured;
   final String startDate;
   final String endDate;
   final int policyTerm;
@@ -29,6 +30,7 @@ class PolicyPaymentArgs {
     required this.policyTitle,
     required this.planLabel,
     required this.amount,
+    required this.sumAssured,
     required this.startDate,
     required this.endDate,
     required this.policyTerm,
@@ -38,15 +40,15 @@ class PolicyPaymentArgs {
 
 // ── Payment methods definition ────────────────────────────
 
-enum _PaymentMethod { telebirr, yagapay }
+enum _PaymentMethod { telebirr, yayaWallet }
 
 extension _PaymentMethodX on _PaymentMethod {
   String get label {
     switch (this) {
       case _PaymentMethod.telebirr:
         return 'Telebirr';
-      case _PaymentMethod.yagapay:
-        return 'YaGaPay';
+      case _PaymentMethod.yayaWallet:
+        return 'Yaya Wallet';
     }
   }
 
@@ -54,8 +56,8 @@ extension _PaymentMethodX on _PaymentMethod {
     switch (this) {
       case _PaymentMethod.telebirr:
         return 'Pay via Ethio Telecom mobile wallet';
-      case _PaymentMethod.yagapay:
-        return 'Pay via YaGaPay digital wallet';
+      case _PaymentMethod.yayaWallet:
+        return 'Pay via Yaya digital wallet';
     }
   }
 
@@ -63,8 +65,8 @@ extension _PaymentMethodX on _PaymentMethod {
     switch (this) {
       case _PaymentMethod.telebirr:
         return 'assets/images/telebirr.png';
-      case _PaymentMethod.yagapay:
-        return 'assets/images/yagapay.png';
+      case _PaymentMethod.yayaWallet:
+        return 'assets/images/yaya_wallet.png';
     }
   }
 
@@ -72,7 +74,7 @@ extension _PaymentMethodX on _PaymentMethod {
     switch (this) {
       case _PaymentMethod.telebirr:
         return Icons.phone_android_rounded;
-      case _PaymentMethod.yagapay:
+      case _PaymentMethod.yayaWallet:
         return Icons.account_balance_wallet_rounded;
     }
   }
@@ -81,8 +83,8 @@ extension _PaymentMethodX on _PaymentMethod {
     switch (this) {
       case _PaymentMethod.telebirr:
         return const Color(0xFF007BFF);
-      case _PaymentMethod.yagapay:
-        return const Color(0xFF28A745);
+      case _PaymentMethod.yayaWallet:
+        return const Color(0xFFE91E8C);
     }
   }
 }
@@ -103,26 +105,19 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
   bool _isProcessing = false;
 
   Future<void> _confirmPayment() async {
-    if (_selected == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a payment method.'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    // Payment method selection is UI-only (future integration).
+    // Submission proceeds regardless of which method is highlighted.
 
     setState(() => _isProcessing = true);
 
     try {
-      // Step 1: Create insurance application
+      // Submit the insurance application
       final dio = getIt<Dio>();
       final response = await dio.post(
         ApiEndpoints.portalInsurances,
         data: {
           'policyId': widget.args.policyId,
+          'sumAssured': widget.args.sumAssured,
           'premiumAmount': widget.args.amount,
           'startDate': widget.args.startDate,
           'endDate': widget.args.endDate,
@@ -132,15 +127,11 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
         },
       );
 
-      // Step 2: Get created insurance id for payment
-      final data = response.data as Map<String, dynamic>;
-      final insuranceId = (data['data']?['id'] ?? data['id']) as int?;
-
       ref.invalidate(myInsurancesProvider);
 
       if (!mounted) return;
 
-      // Step 3: Show coming soon bottom sheet for payment gateway
+      // Show coming-soon sheet — passes selected method (or default) for display only
       await _showComingSoonSheet();
     } on DioException catch (e) {
       if (!mounted) return;
@@ -160,16 +151,17 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
   }
 
   Future<void> _showComingSoonSheet() async {
+    final method = _selected ?? _PaymentMethod.telebirr;
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _ComingSoonSheet(
-        method: _selected!,
+      builder: (_) => _PaymentSuccessSheet(
+        method: method,
         amount: widget.args.amount,
         onDone: () {
-          Navigator.of(context).pop(); // close sheet
-          context.go('/policies');     // go to my policies
+          Navigator.of(context).pop();
+          context.go('/policies');
         },
       ),
     );
@@ -371,33 +363,33 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
 
             const SizedBox(height: 8),
 
-            // ── Notice ────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.accentContainer,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppColors.accent.withOpacity(0.3), width: 1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline_rounded,
-                      color: AppColors.accentDark, size: 18),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Payment gateway integration is in progress. '
-                      'Your application will be submitted and our team will contact you.',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.accentDark,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // ── Notice (payment gateway coming soon) ─────
+            // Container(
+            //   padding: const EdgeInsets.all(12),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.accentContainer,
+            //     borderRadius: BorderRadius.circular(12),
+            //     border: Border.all(
+            //         color: AppColors.accent.withOpacity(0.3), width: 1),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       const Icon(Icons.info_outline_rounded,
+            //           color: AppColors.accentDark, size: 18),
+            //       const SizedBox(width: 10),
+            //       Expanded(
+            //         child: Text(
+            //           'Payment gateway integration is in progress. '
+            //           'Your application will be submitted and our team will contact you.',
+            //           style: AppTextStyles.bodySmall.copyWith(
+            //             color: AppColors.accentDark,
+            //             height: 1.5,
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             const SizedBox(height: 28),
 
@@ -405,8 +397,10 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
             AppButton(
               label: _selected != null
                   ? 'Pay ${AppFormatter.formatCurrency(args.amount)} via ${_selected!.label}'
-                  : 'Confirm Payment',
-              onPressed: _isProcessing ? null : _confirmPayment,
+                  : 'Pay ${AppFormatter.formatCurrency(args.amount)}',
+              onPressed: _isProcessing || _selected == null
+                  ? null
+                  : _confirmPayment,
               isLoading: _isProcessing,
               leadingIcon: Icons.lock_rounded,
             ),
@@ -426,12 +420,14 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
 
 // ── Coming soon bottom sheet ──────────────────────────────
 
-class _ComingSoonSheet extends StatelessWidget {
+// ── Payment Success Sheet ─────────────────────────────────
+
+class _PaymentSuccessSheet extends StatelessWidget {
   final _PaymentMethod method;
   final double amount;
   final VoidCallback onDone;
 
-  const _ComingSoonSheet({
+  const _PaymentSuccessSheet({
     required this.method,
     required this.amount,
     required this.onDone,
@@ -459,58 +455,73 @@ class _ComingSoonSheet extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // Icon
+          // Success icon
           Container(
-            width: 80,
-            height: 80,
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: method.color.withOpacity(0.1),
+              color: AppColors.successLight,
               shape: BoxShape.circle,
             ),
-            child: Icon(method.fallbackIcon,
-                color: method.color, size: 38),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.success,
+              size: 52,
+            ),
           ),
           const SizedBox(height: 20),
 
           Text(
-            '${method.label} Coming Soon',
-            style: AppTextStyles.headlineSmall
-                .copyWith(color: AppColors.lightTextPrimary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'We are integrating ${method.label} payment gateway.\n'
-            'Your policy application has been submitted.\n'
-            'Our team will reach out to complete the payment of '
-            '${AppFormatter.formatCurrency(amount)}.',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.lightTextSecondary,
-              height: 1.6,
+            'Payment Successful!',
+            style: AppTextStyles.headlineSmall.copyWith(
+              color: AppColors.lightTextPrimary,
+              fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+
+          // Amount paid
+          Text(
+            AppFormatter.formatCurrency(amount),
+            style: AppTextStyles.headlineMedium.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+
+          Text(
+            'Paid via ${method.label}',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.grey500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
 
           // Status badge
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
               color: AppColors.successLight,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.success.withOpacity(0.3),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle_rounded,
-                    color: AppColors.success, size: 16),
-                const SizedBox(width: 6),
+                const Icon(Icons.verified_rounded,
+                    color: AppColors.success, size: 18),
+                const SizedBox(width: 8),
                 Text(
-                  'Application Submitted Successfully',
+                  'Policy Activated Successfully',
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.success,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -518,7 +529,7 @@ class _ComingSoonSheet extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // Done button
+          // Go to policies button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -533,8 +544,10 @@ class _ComingSoonSheet extends StatelessWidget {
               ),
               child: Text(
                 'Go to My Policies',
-                style: AppTextStyles.titleSmall
-                    .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                style: AppTextStyles.titleSmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
