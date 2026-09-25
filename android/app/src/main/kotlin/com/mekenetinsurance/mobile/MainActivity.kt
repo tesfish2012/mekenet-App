@@ -1,4 +1,4 @@
-package com.mekenetinsurance.mekenetinsurance_mobile
+package com.mekenetinsurance.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

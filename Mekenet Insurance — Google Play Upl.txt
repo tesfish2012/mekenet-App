@@ -1,0 +1,245 @@
+Mekenet Insurance — Google Play Upload Requirements
+
+1. App identity
+
+Item	Required value
+App name	Mekenet Insurance
+Package name	com.mekenetinsurance.mobile
+Version name	1.0.0
+Version code	1
+Category	Finance
+Target audience	18+
+App type	Insurance / Financial services
+
+2. Store listing
+
+Short description
+
+Maximum 80 characters:
+
+Mekenet Insurance — manage policies, claims and payments on the go
+
+Full description
+
+Mekenet Insurance makes it easy to manage your insurance services from your mobile device.
+
+With Mekenet Insurance, customers can conveniently access their insurance information and manage their policies wherever they are.
+
+Key features:
+
+View and manage insurance policies
+Access policy details and coverage information
+Submit and manage insurance claims
+Track claim status
+Access your digital insurance card
+View insurance-related payments and information
+Receive important notifications and updates
+Access broker and insurance service functionality
+Manage your account securely
+
+Mekenet Insurance provides a convenient digital experience for accessing insurance services and staying informed about your policies and claims.
+
+3. Contact information
+
+You need:
+
+Developer/support email
+Website
+Optional phone number
+Privacy policy URL
+
+Example:
+
+Support email: support@mekenet.et
+Website: https://mekenet.et
+Privacy policy: https://mekenet.et/privacy-policy
+
+Use your actual support and privacy-policy URLs in Play Console.
+
+4. Required graphics/assets
+
+Prepare these before creating the release:
+
+Asset	Requirement
+App icon	512 × 512 PNG
+Feature graphic	1024 × 500
+Phone screenshots	At least 2 recommended
+Tablet screenshots	Recommended if tablet support is enabled
+Promotional graphics	Optional
+App logo	High-quality PNG/SVG source
+
+For screenshots, show real app screens such as:
+
+Login
+Home/dashboard
+Policy list
+Policy details
+Claims
+Claim submission
+Digital insurance card
+Payments
+Notifications
+Profile/settings
+
+Do not put fake Play Store badges, misleading claims, or excessive promotional text on screenshots.
+
+5. App access
+
+Because the application requires authentication, configure:
+
+App access → All or some functionality is restricted
+
+Provide a reviewer test account.
+
+Recommended:
+
+Customer account
+Username/Phone: [TEST CUSTOMER]
+Password: [TEST PASSWORD]
+
+Broker account
+Username/Phone: [TEST BROKER]
+Password: [TEST PASSWORD]
+
+Explain what each account can access.
+
+Do not send me real credentials. Use dedicated Play Store reviewer/test accounts.
+
+6. Content rating
+
+Complete the Google Play content-rating questionnaire.
+
+Expected classification should be based on the actual app behavior.
+
+For a normal insurance application with no violent, sexual, gambling, or similar content, the resulting rating may be Everyone, but let Google determine the final rating through the questionnaire.
+
+7. Target audience
+
+Configure the actual intended audience.
+
+For your proposed configuration:
+
+Target age: 18+
+
+Make sure the app's content and functionality are consistent with the selected audience.
+
+8. Data safety
+
+You must accurately declare what the application actually collects and shares.
+
+Based on the information you provided, potentially relevant categories include:
+
+Data	Possible purpose
+Name	Account management
+Email	Account management / communication
+Phone number	Account/login
+Insurance/policy information	Core functionality
+Financial information	Insurance/payment functionality
+Device identifiers	Notifications / app functionality
+Crash/diagnostic information	App diagnostics
+
+Declare only data that the current production application actually collects.
+
+Security
+
+If your application communicates with the backend using HTTPS:
+
+Data encrypted in transit: Yes
+Account deletion
+
+If users can request deletion of their account/data:
+
+Users can request data deletion: Yes
+
+If this functionality is not actually available yet, don't claim that it is.
+
+9. Privacy policy
+
+A publicly accessible privacy-policy page is required for apps handling personal information.
+
+The policy should explain:
+
+What personal data is collected
+Why it is collected
+How data is used
+How data is stored
+Data security
+Data sharing
+Third-party services
+Firebase/FCM if used
+Analytics/crash reporting if used
+User rights
+Account/data deletion
+Contact information
+Children's privacy
+Policy updates
+
+The URL must be publicly accessible without requiring login.
+
+10. Financial services declaration
+
+Because this is an insurance application, carefully complete any Google Play questions concerning financial products/services.
+
+Describe the application accurately as an insurance-service application.
+
+Do not select banking, lending, investment, cryptocurrency, gambling, or other financial categories unless the application actually provides those services.
+
+11. Android application configuration
+
+Verify:
+
+Application ID:
+com.mekenetinsurance.mobile
+
+Version name:
+1.0.0
+
+Version code:
+1
+
+Before production, confirm that:
+
+Release signing is configured
+Package name is correct
+Production API URL is correct
+HTTPS is enabled
+Debug endpoints are removed
+Debug logging is disabled/restricted
+Test credentials are not hardcoded
+API keys/secrets are not exposed
+Firebase configuration is correct
+Push notifications work
+Backend is accessible from the Internet
+App does not point to localhost/private development IPs
+12. Build the AAB
+
+After fixing the Gradle/NDK problem:
+
+flutter clean
+flutter pub get
+flutter build appbundle --release
+
+Expected output:
+
+build/app/outputs/bundle/release/app-release.aab
+
+Verify the file exists:
+
+ls -lh build/app/outputs/bundle/release/app-release.aab
+
+On Windows:
+
+dir build\app\outputs\bundle\release\
+13. Release track
+
+Recommended sequence:
+
+Internal testing
+       ↓
+Closed testing
+       ↓
+Open testing
+       ↓
+Production
+
+For the first upload, use:
