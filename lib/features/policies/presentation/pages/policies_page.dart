@@ -110,6 +110,12 @@ class _PoliciesPageState extends ConsumerState<PoliciesPage> {
                                   .where((i) =>
                                       i.status.toUpperCase() == 'ACTIVE')
                                   .length;
+                              final pending = list
+                                  .where((i) =>
+                                      i.status.toUpperCase() == 'PENDING' ||
+                                      i.status.toUpperCase() == 'IN_REVIEW' ||
+                                      i.status.toUpperCase() == 'NEW')
+                                  .length;
                               return Row(
                                 children: [
                                   _HeroStat(
@@ -124,6 +130,15 @@ class _PoliciesPageState extends ConsumerState<PoliciesPage> {
                                     icon: Icons.check_circle_outline_rounded,
                                     valueColor: AppColors.success,
                                   ),
+                                  if (pending > 0) ...[
+                                    const SizedBox(width: 20),
+                                    _HeroStat(
+                                      label: 'Pending',
+                                      value: '$pending',
+                                      icon: Icons.hourglass_top_rounded,
+                                      valueColor: AppColors.accent,
+                                    ),
+                                  ],
                                 ],
                               );
                             }).value ??
@@ -467,14 +482,26 @@ class _DarkStatusChip extends StatelessWidget {
       case 'PENDING':
         color = AppColors.accent;
         break;
+      case 'IN_REVIEW':
+      case 'CONFIRM':
+        color = AppColors.warning;
+        break;
+      case 'NEW':
+        color = AppColors.primaryLight;
+        break;
       case 'EXPIRED':
         color = AppColors.error;
+        break;
+      case 'CANCELLED':
+        color = AppColors.grey400;
         break;
       default:
         color = AppColors.grey400;
     }
-    final label = status[0].toUpperCase() +
-        status.substring(1).toLowerCase().replaceAll('_', ' ');
+    final label = status
+        .split('_')
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(

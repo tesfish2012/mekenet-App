@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../providers/policies_provider.dart';
@@ -28,6 +29,8 @@ class ApplyPolicyPage extends ConsumerStatefulWidget {
 class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   final _formKey = GlobalKey<FormState>();
   final _notesCtrl = TextEditingController();
+  final _startDateCtrl = TextEditingController();
+  final _endDateCtrl = TextEditingController();
 
   late int _selectedPricingIndex;
   late DateTime _startDate;
@@ -40,6 +43,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     _selectedPricingIndex = widget.selectedPricingIndex ?? 0;
     _startDate = DateTime.now();
     _endDate = DateTime(_startDate.year + 1, _startDate.month, _startDate.day);
+    _startDateCtrl.text = _formatDate(_startDate);
+    _endDateCtrl.text = _formatDate(_endDate);
   }
 
   void _updateEndDate(int months) {
@@ -49,6 +54,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
         _startDate.month + months,
         _startDate.day,
       );
+      _endDateCtrl.text = _formatDate(_endDate);
     });
   }
 
@@ -58,6 +64,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
       initialDate: _startDate,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      builder: (context, child) => AppTheme.datePickerTheme(context, child),
     );
     if (picked != null) {
       setState(() {
@@ -67,6 +74,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
           picked.month + (months > 0 ? months : 12),
           picked.day,
         );
+        _startDateCtrl.text = _formatDate(_startDate);
+        _endDateCtrl.text = _formatDate(_endDate);
       });
     }
   }
@@ -77,10 +86,44 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
       initialDate: _endDate,
       firstDate: _startDate.add(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      builder: (context, child) => AppTheme.datePickerTheme(context, child),
     );
     if (picked != null) {
-      setState(() => _endDate = picked);
+      setState(() {
+        _endDate = picked;
+        _endDateCtrl.text = _formatDate(_endDate);
+      });
     }
+  }
+
+  Widget _datePickerTheme(BuildContext context, Widget? child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: const ColorScheme.light(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          onSurface: AppColors.lightTextPrimary,
+          surface: Colors.white,
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+      ),
+      child: child!,
+    );
   }
 
   String _formatDate(DateTime d) {
@@ -92,6 +135,8 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   @override
   void dispose() {
     _notesCtrl.dispose();
+    _startDateCtrl.dispose();
+    _endDateCtrl.dispose();
     super.dispose();
   }
 
@@ -303,100 +348,84 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             ],
 
             // ── Coverage Period ───────────────────────────
-            Text('Coverage Period', style: AppTextStyles.titleMedium),
+            Text('Coverage Period', style: AppTextStyles.titleMedium.copyWith(color: AppColors.primary)),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                // Start Date
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      final months = selectedTier != null
-                          ? ((selectedTier['months'] as num?)?.toInt() ?? 12)
-                          : (policy.durationMonths > 0
-                              ? policy.durationMonths
-                              : 12);
-                      _pickStartDate(months);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.lightBorder),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today_rounded,
-                                  size: 14, color: AppColors.primary),
-                              const SizedBox(width: 6),
-                              Text('Start Date',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.grey500)),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(_formatDate(_startDate),
-                              style: AppTextStyles.titleSmall),
-                          const SizedBox(height: 4),
-                          Text('Tap to change',
-                              style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.primary)),
-                        ],
-                      ),
-                    ),
-                  ),
+            // Start Date field
+            TextFormField(
+              readOnly: true,
+              controller: _startDateCtrl,
+              onTap: () {
+                final months = selectedTier != null
+                    ? ((selectedTier['months'] as num?)?.toInt() ?? 12)
+                    : (policy.durationMonths > 0 ? policy.durationMonths : 12);
+                _pickStartDate(months);
+              },
+              decoration: InputDecoration(
+                labelText: 'Start Date',
+                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
+                hintText: 'Select start date',
+                prefixIcon: const Icon(Icons.calendar_today_rounded,
+                    size: 18, color: AppColors.primary),
+                suffixIcon: const Icon(Icons.edit_calendar_rounded,
+                    size: 18, color: AppColors.primary),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.lightBorder),
                 ),
-                const SizedBox(width: 10),
-                // End Date
-                Expanded(
-                  child: InkWell(
-                    onTap: _pickEndDate,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.event_rounded,
-                                  size: 14, color: AppColors.primary),
-                              const SizedBox(width: 6),
-                              Text('End Date',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.grey500)),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(_formatDate(_endDate),
-                              style: AppTextStyles.titleSmall),
-                          const SizedBox(height: 4),
-                          Text('Tap to change',
-                              style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.primary)),
-                        ],
-                      ),
-                    ),
-                  ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.lightBorder),
                 ),
-              ],
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                ),
+              ),
+              style: AppTextStyles.titleSmall.copyWith(
+                color: AppColors.lightTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 10),
+            // End Date field — auto-filled after start is picked, also manually editable
+            TextFormField(
+              readOnly: true,
+              controller: _endDateCtrl,
+              onTap: _pickEndDate,
+              decoration: InputDecoration(
+                labelText: 'End Date',
+                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
+                hintText: 'Auto-filled from start date',
+                prefixIcon: const Icon(Icons.event_rounded,
+                    size: 18, color: AppColors.primary),
+                suffixIcon: const Icon(Icons.edit_calendar_rounded,
+                    size: 18, color: AppColors.primary),
+                filled: true,
+                fillColor: AppColors.primaryContainer,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                ),
+                helperText: 'Auto-calculated · tap to adjust',
+                helperStyle: AppTextStyles.caption.copyWith(color: AppColors.primary),
+              ),
+              style: AppTextStyles.titleSmall.copyWith(
+                color: AppColors.lightTextPrimary,
+              ),
             ),
             const SizedBox(height: 20),
 
             // ── Notes (optional) ──────────────────────────
-            Text('Notes (optional)', style: AppTextStyles.titleMedium),
+            Text('Notes (optional)', style: AppTextStyles.titleMedium.copyWith(color: AppColors.primary)),
             const SizedBox(height: 10),
             TextFormField(
               controller: _notesCtrl,
@@ -409,11 +438,32 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
             const SizedBox(height: 20),
 
             // ── Order summary (read-only amounts) ─────────
-            AppCard(
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.lightBorder),
+              ),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Summary', style: AppTextStyles.titleMedium),
+                  Row(
+                    children: [
+                      const Icon(Icons.receipt_long_rounded,
+                          size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Order Summary',
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: AppColors.lightBorder),
                   const SizedBox(height: 12),
                   _SummaryRow(label: 'Policy', value: policy.title),
                   if (selectedTier != null)
@@ -429,10 +479,11 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                   if (policy.sumAssuredDefault > 0)
                     _SummaryRow(
                       label: 'Sum Assured',
-                      value: AppFormatter.formatCurrency(
-                          policy.sumAssuredDefault),
+                      value: AppFormatter.formatCurrency(policy.sumAssuredDefault),
                     ),
-                  const Divider(height: 20),
+                  const SizedBox(height: 8),
+                  const Divider(height: 1, color: AppColors.lightBorder),
+                  const SizedBox(height: 8),
                   _SummaryRow(
                     label: 'Premium Amount',
                     value: AppFormatter.formatCurrency(displayAmount),
@@ -521,27 +572,38 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.grey600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: isTotal
-                ? AppTextStyles.titleSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  )
-                : AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.lightTextPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            overflow: TextOverflow.ellipsis,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: isTotal
+                  ? AppTextStyles.titleSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    )
+                  : AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.lightTextPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
           ),
         ],
       ),

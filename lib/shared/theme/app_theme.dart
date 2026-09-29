@@ -7,6 +7,40 @@ import 'app_text_styles.dart';
 class AppTheme {
   AppTheme._();
 
+  /// Wrap showDatePicker's builder with this to fix OK/Cancel button visibility.
+  /// Usage: showDatePicker(builder: (ctx, child) => AppTheme.datePickerTheme(ctx, child))
+  static Widget datePickerTheme(BuildContext context, Widget? child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: const ColorScheme.light(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          onSurface: AppColors.lightTextPrimary,
+          surface: Colors.white,
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        dialogTheme: DialogThemeData(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+      child: child!,
+    );
+  }
+
   static ThemeData get light => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,

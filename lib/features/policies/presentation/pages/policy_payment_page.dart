@@ -247,7 +247,7 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
             const SizedBox(height: 28),
 
             Text('Select Payment Method',
-                style: AppTextStyles.titleLarge),
+                style: AppTextStyles.titleLarge.copyWith(color: AppColors.primary)),
             const SizedBox(height: 4),
             Text(
               'Choose how you want to pay your premium',
@@ -455,24 +455,24 @@ class _PaymentSuccessSheet extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // Success icon
+          // Pending icon
           Container(
             width: 88,
             height: 88,
             decoration: BoxDecoration(
-              color: AppColors.successLight,
+              color: AppColors.warningLight,
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.success,
-              size: 52,
+              Icons.hourglass_top_rounded,
+              color: AppColors.warning,
+              size: 48,
             ),
           ),
           const SizedBox(height: 20),
 
           Text(
-            'Payment Successful!',
+            'Application Submitted!',
             style: AppTextStyles.headlineSmall.copyWith(
               color: AppColors.lightTextPrimary,
               fontWeight: FontWeight.w700,
@@ -481,7 +481,7 @@ class _PaymentSuccessSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // Amount paid
+          // Amount
           Text(
             AppFormatter.formatCurrency(amount),
             style: AppTextStyles.headlineMedium.copyWith(
@@ -493,7 +493,7 @@ class _PaymentSuccessSheet extends StatelessWidget {
           const SizedBox(height: 6),
 
           Text(
-            'Paid via ${method.label}',
+            'Payment via ${method.label} will be processed upon approval',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.grey500,
             ),
@@ -501,27 +501,54 @@ class _PaymentSuccessSheet extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Status badge
+          // Pending status badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.successLight,
+              color: AppColors.warningLight,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: AppColors.success.withOpacity(0.3),
+                color: AppColors.warning.withOpacity(0.4),
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.verified_rounded,
-                    color: AppColors.success, size: 18),
+                const Icon(Icons.pending_actions_rounded,
+                    color: AppColors.warning, size: 18),
                 const SizedBox(width: 8),
                 Text(
-                  'Policy Activated Successfully',
+                  'Pending Approval',
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.success,
+                    color: AppColors.warning,
                     fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Informational note
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline_rounded,
+                    color: AppColors.primary, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Your application is under review. You can track the status in My Policies. We will notify you once it is approved.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primary,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ],
@@ -543,7 +570,7 @@ class _PaymentSuccessSheet extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Go to My Policies',
+                'Track My Application',
                 style: AppTextStyles.titleSmall.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

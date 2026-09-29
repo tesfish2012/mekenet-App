@@ -262,7 +262,7 @@ class _BrowsePolicyDetailPageState
                             children: [
                               Text(
                                 AppFormatter.formatCurrency(
-                                    (tier['price'] as num).toDouble()),
+                                    (tier['price'] as num?)?.toDouble() ?? 0.0),
                                 style: AppTextStyles.titleSmall.copyWith(
                                   color: isSelected
                                       ? Colors.white
@@ -350,7 +350,7 @@ class _BrowsePolicyDetailPageState
               // ── Apply CTA ───────────────────────────────
               AppButton(
                 label: pricing.isNotEmpty
-                    ? 'Apply — ${AppFormatter.formatCurrency((pricing[_selectedPricingIndex]['price'] as num).toDouble())}'
+                    ? 'Apply — ${AppFormatter.formatCurrency(((pricing[_selectedPricingIndex]['price'] as num?)?.toDouble() ?? 0.0))}'
                     : 'Apply Now',
                 onPressed: () {
                   context.push(
