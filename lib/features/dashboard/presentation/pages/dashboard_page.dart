@@ -345,6 +345,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
   @override
   Widget build(BuildContext context) {
     final policyTypes = widget.policyTypes;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (policyTypes.isEmpty) return const SizedBox.shrink();
 
     final hasMore = policyTypes.length > _collapsedMax;
@@ -399,11 +400,13 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 11),
                 decoration: BoxDecoration(
-                  color: _expanded
-                      ? AppColors.primaryContainer
-                      : Colors.white,
+                    color: _expanded
+                      ? (isDark ? AppColors.darkCard : AppColors.primaryContainer)
+                      : (isDark ? AppColors.darkCard : Colors.white),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.lightBorder),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -414,7 +417,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 20,
-                        color: AppColors.primary,
+                        color: isDark ? Colors.white : AppColors.primary,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -423,7 +426,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                           ? 'Show Less'
                           : 'See All  (+${policyTypes.length - _collapsedMax} more)',
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.primary,
+                        color: isDark ? Colors.white : AppColors.primary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -450,6 +453,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
       ),
       itemBuilder: (context, index) {
         final type = types[index];
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         final isSelected = ref.watch(selectedPolicyTypeIdProvider) == type.id;
 
         return GestureDetector(
@@ -471,10 +475,18 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                       colors: AppColors.primaryGradient,
                     )
                   : null,
-              color: isSelected ? null : Colors.white,
+                color: isSelected
+                  ? null
+                  : isDark
+                    ? AppColors.darkCard
+                    : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.lightBorder,
+                color: isSelected
+                  ? AppColors.primary
+                  : isDark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
               ),
               boxShadow: [
                 BoxShadow(
@@ -493,13 +505,17 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.white.withOpacity(0.2)
+                      : isDark
+                        ? AppColors.primaryLight
                         : AppColors.primaryContainer,
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: Icon(
                     _categoryIcon(type.name),
                     size: 16,
-                    color: isSelected ? Colors.white : AppColors.primary,
+                    color: isSelected || isDark
+                      ? Colors.white
+                      : AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -513,7 +529,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                         style: AppTextStyles.labelMedium.copyWith(
                           color: isSelected
                               ? Colors.white
-                              : AppColors.lightTextPrimary,
+                              : AppTextStyles.textPrimaryColor,
                           fontWeight: FontWeight.w700,
                         ),
                         maxLines: 1,
@@ -524,7 +540,7 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                         style: AppTextStyles.caption.copyWith(
                           color: isSelected
                               ? Colors.white70
-                              : AppColors.grey500,
+                              : AppTextStyles.textSecondaryColor,
                         ),
                       ),
                     ],
@@ -535,7 +551,9 @@ class _StatsGridState extends ConsumerState<_StatsGrid> {
                   size: 16,
                   color: isSelected
                       ? Colors.white70
-                      : AppColors.grey400,
+                      : isDark
+                        ? AppColors.darkTextHint
+                        : AppColors.grey400,
                 ),
               ],
             ),

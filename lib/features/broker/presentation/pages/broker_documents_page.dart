@@ -179,7 +179,7 @@ class _DocumentCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text('No file attached',
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.grey400)),
+                            .copyWith(color: AppTextStyles.textHintColor)),
                     ],
                   ),
                 ],

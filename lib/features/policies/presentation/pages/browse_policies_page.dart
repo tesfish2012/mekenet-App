@@ -102,7 +102,7 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: CustomScrollView(
         slivers: [
           // ── Branded header with search ─────────────────────
@@ -187,7 +187,7 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
                                         .state = v,
                                     style: AppTextStyles.bodyMedium.copyWith(
                                       color: _searchFocused
-                                          ? AppColors.lightTextPrimary
+                                          ? AppTextStyles.textPrimaryColor
                                           : Colors.white,
                                     ),
                                     decoration: InputDecoration(
@@ -335,7 +335,7 @@ class _BrowsePoliciesPageState extends ConsumerState<BrowsePoliciesPage> {
                       Text(
                         'for "$query"',
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.grey500),
+                            .copyWith(color: AppTextStyles.textSecondaryColor),
                       ),
                   ],
                 ),
@@ -417,14 +417,18 @@ class _PolicyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cleanDesc = _cleanDescription(policy.description);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () => context.push('/policies/browse/${policy.id}'),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.lightBorder, width: 1),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withOpacity(0.06),
@@ -465,7 +469,7 @@ class _PolicyCard extends StatelessWidget {
                         Text(
                           policy.title,
                           style: AppTextStyles.titleSmall.copyWith(
-                            color: AppColors.lightTextPrimary,
+                            color: AppTextStyles.textPrimaryColor,
                             fontWeight: FontWeight.w600,
                           ),
                           maxLines: 2,
@@ -476,7 +480,7 @@ class _PolicyCard extends StatelessWidget {
                           Text(
                             policy.policyTypeName,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.grey500,
+                              color: AppTextStyles.textSecondaryColor,
                             ),
                           ),
                         ],
@@ -494,14 +498,14 @@ class _PolicyCard extends StatelessWidget {
                 child: Text(
                   cleanDesc,
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.grey500, height: 1.5),
+                      .copyWith(color: AppTextStyles.textSecondaryColor, height: 1.5),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
 
             // ── Divider ────────────────────────────────────
-            const Divider(height: 1, color: AppColors.lightBorder),
+            Divider(height: 1, color: Theme.of(context).colorScheme.outline),
 
             // ── Bottom: tags + premium CTA ─────────────────
             Padding(
@@ -547,14 +551,16 @@ class _PolicyCard extends StatelessWidget {
                       Text(
                         AppFormatter.formatCurrency(policy.minPremium),
                         style: AppTextStyles.titleSmall.copyWith(
-                          color: AppColors.primary,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
                         'from / yr',
                         style: AppTextStyles.caption
-                            .copyWith(color: AppColors.grey400),
+                            .copyWith(color: AppTextStyles.textHintColor),
                       ),
                       const SizedBox(height: 6),
                       GestureDetector(
@@ -655,6 +661,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -662,10 +669,18 @@ class _CategoryChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
+            color: isSelected
+              ? AppColors.primary
+              : isDark
+                ? AppColors.darkCard
+                : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.grey200,
+            color: isSelected
+              ? AppColors.primary
+              : isDark
+                ? AppColors.darkBorder
+                : AppColors.grey200,
             width: 1.2,
           ),
           boxShadow: isSelected
@@ -684,13 +699,13 @@ class _CategoryChip extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.white : AppColors.primary,
+              color: isSelected || isDark ? Colors.white : AppColors.primary,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? Colors.white : AppColors.lightTextPrimary,
+                color: isSelected ? Colors.white : AppTextStyles.textPrimaryColor,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),

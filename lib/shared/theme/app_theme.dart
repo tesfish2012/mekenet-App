@@ -10,13 +10,12 @@ class AppTheme {
   /// Wrap showDatePicker's builder with this to fix OK/Cancel button visibility.
   /// Usage: showDatePicker(builder: (ctx, child) => AppTheme.datePickerTheme(ctx, child))
   static Widget datePickerTheme(BuildContext context, Widget? child) {
+    final theme = Theme.of(context);
     return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: const ColorScheme.light(
+      data: theme.copyWith(
+        colorScheme: theme.colorScheme.copyWith(
           primary: AppColors.primary,
           onPrimary: Colors.white,
-          onSurface: AppColors.lightTextPrimary,
-          surface: Colors.white,
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
@@ -30,8 +29,8 @@ class AppTheme {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
-        dialogTheme: DialogThemeData(
-          backgroundColor: Colors.white,
+        dialogTheme: theme.dialogTheme.copyWith(
+          backgroundColor: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -245,15 +244,15 @@ class AppTheme {
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(
-          primary: AppColors.primaryLight,
+          primary: AppColors.primary,
           onPrimary: Colors.white,
           primaryContainer: Color(0xFF1E3A8A),
-          onPrimaryContainer: AppColors.primaryLight,
+          onPrimaryContainer: Colors.white,
           secondary: AppColors.accent,             // Gold as secondary
           onSecondary: AppColors.secondary,
           secondaryContainer: Color(0xFF3D2A00),
           onSecondaryContainer: AppColors.accentLight,
-          tertiary: AppColors.primaryLight,
+          tertiary: AppColors.primary,
           onTertiary: Colors.white,
           surface: AppColors.darkSurface,
           onSurface: AppColors.darkTextPrimary,

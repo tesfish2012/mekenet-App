@@ -157,9 +157,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.lightBorder),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline),
                             borderRadius: BorderRadius.circular(12),
-                            color: AppColors.grey50,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                           child: Row(
                             children: [
@@ -173,7 +173,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                 style: AppTextStyles.bodyLarge.copyWith(
                                   color: _dob != null
                                       ? null
-                                      : AppColors.lightTextHint,
+                                      : AppTextStyles.textHintColor,
                                 ),
                               ),
                             ],

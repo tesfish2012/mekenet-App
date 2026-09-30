@@ -226,7 +226,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: AppTextStyles.overline.copyWith(
-          color: AppColors.grey500,
+          color: AppTextStyles.textHintColor,
           letterSpacing: 1.2,
         ),
       ),

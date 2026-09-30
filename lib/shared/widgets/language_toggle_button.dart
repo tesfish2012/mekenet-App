@@ -215,14 +215,14 @@ class _LangOption extends StatelessWidget {
                     style: AppTextStyles.titleSmall.copyWith(
                       color: isSelected
                           ? AppColors.primary
-                          : AppColors.lightTextPrimary,
+                          : AppTextStyles.textPrimaryColor,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
                     sublabel,
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.grey500),
+                        .copyWith(color: AppTextStyles.textSecondaryColor),
                   ),
                 ],
               ),

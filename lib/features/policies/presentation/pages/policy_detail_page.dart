@@ -34,6 +34,7 @@ class PolicyDetailPage extends ConsumerWidget {
     final insuranceAsync = ref.watch(insuranceByIdProvider(policyId));
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text('policies.policy_details'.tr()),
         actions: [
@@ -399,7 +400,7 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                         Text(
                           '${widget.insurance.policyTitle} (${widget.insurance.insuranceNumber})',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.grey500,
+                            color: AppTextStyles.textSecondaryColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -416,7 +417,7 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                 'Select Renewal Term',
                 style: AppTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.lightTextPrimary,
+                  color: AppTextStyles.textPrimaryColor,
                 ),
               ),
               const SizedBox(height: 8),
@@ -433,12 +434,16 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSel ? AppColors.primary : AppColors.grey100,
+                            color: isSel
+                              ? AppColors.primary
+                              : Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.darkCard
+                                : AppColors.grey100,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: isSel
                                   ? AppColors.primary
-                                  : AppColors.grey300,
+                                  : Theme.of(context).colorScheme.outline,
                             ),
                           ),
                           alignment: Alignment.center,
@@ -447,7 +452,7 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                             style: AppTextStyles.labelSmall.copyWith(
                               color: isSel
                                   ? Colors.white
-                                  : AppColors.lightTextPrimary,
+                                  : AppTextStyles.textPrimaryColor,
                               fontWeight:
                                   isSel ? FontWeight.w700 : FontWeight.w500,
                             ),
@@ -508,16 +513,16 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.grey50,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.grey300),
+                          border: Border.all(color: Theme.of(context).colorScheme.outline),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Start Date',
                                 style: AppTextStyles.labelSmall
-                                    .copyWith(color: AppColors.grey500)),
+                                    .copyWith(color: AppTextStyles.textSecondaryColor)),
                             const SizedBox(height: 4),
                             Row(
                               children: [
@@ -545,16 +550,16 @@ class _RenewalBottomSheetState extends ConsumerState<_RenewalBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.grey50,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.grey300),
+                          border: Border.all(color: Theme.of(context).colorScheme.outline),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('End Date',
                                 style: AppTextStyles.labelSmall
-                                    .copyWith(color: AppColors.grey500)),
+                                    .copyWith(color: AppTextStyles.textSecondaryColor)),
                             const SizedBox(height: 4),
                             Row(
                               children: [

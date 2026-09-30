@@ -215,7 +215,7 @@ class ClaimDetailPage extends ConsumerWidget {
                                                 doc.documentType,
                                                 style: AppTextStyles.bodySmall
                                                     .copyWith(
-                                                      color: AppColors.grey500,
+                                                      color: AppTextStyles.textSecondaryColor,
                                                     ),
                                               ),
                                               if (doc.fileSize != null) ...[
@@ -226,8 +226,7 @@ class ClaimDetailPage extends ConsumerWidget {
                                                   ),
                                                   style: AppTextStyles.bodySmall
                                                       .copyWith(
-                                                        color:
-                                                            AppColors.grey500,
+                                                        color: AppTextStyles.textSecondaryColor,
                                                       ),
                                                 ),
                                               ],
@@ -488,8 +487,8 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
                           style: AppTextStyles.bodyMedium.copyWith(
                             color:
                                 _selectedFile != null
-                                    ? AppColors.lightTextPrimary
-                                    : AppColors.lightTextHint,
+                                    ? AppTextStyles.textPrimaryColor
+                                    : AppTextStyles.textHintColor,
                             fontWeight:
                                 _selectedFile != null
                                     ? FontWeight.w600
@@ -502,7 +501,7 @@ class _ClaimUploadSheetState extends ConsumerState<_ClaimUploadSheet> {
                           Text(
                             AppFormatter.formatFileSize(_selectedFile!.size),
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.grey500,
+                              color: AppTextStyles.textHintColor,
                             ),
                           ),
                         ],

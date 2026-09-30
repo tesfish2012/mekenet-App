@@ -57,7 +57,7 @@ class _BrowsePolicyDetailPageState
     final policyAsync = ref.watch(policyByIdProvider(widget.policyId));
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: policyAsync.when(
         loading: () => const LoadingView(),
         error: (e, _) => Scaffold(
@@ -203,13 +203,15 @@ class _BrowsePolicyDetailPageState
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary
+                          ? AppColors.primary
+                          : Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkCard
                             : Colors.white,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
-                              : AppColors.lightBorder,
+                              : Theme.of(context).colorScheme.outline,
                           width: isSelected ? 1.5 : 1,
                         ),
                         boxShadow: isSelected
@@ -240,7 +242,9 @@ class _BrowsePolicyDetailPageState
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: isSelected
                                     ? Colors.white
-                                    : AppColors.primary,
+                                      : Theme.of(context).brightness == Brightness.dark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -253,7 +257,7 @@ class _BrowsePolicyDetailPageState
                               style: AppTextStyles.titleSmall.copyWith(
                                 color: isSelected
                                     ? Colors.white
-                                    : AppColors.lightTextPrimary,
+                                    : AppTextStyles.textPrimaryColor,
                               ),
                             ),
                           ),
@@ -341,7 +345,7 @@ class _BrowsePolicyDetailPageState
                   child: Text(
                     _cleanHtml(policy.termsConditions),
                     style: AppTextStyles.bodySmall
-                        .copyWith(height: 1.65, color: AppColors.grey600),
+                        .copyWith(height: 1.65, color: AppTextStyles.textSecondaryColor),
                   ),
                 ).animate().fadeIn(delay: 150.ms, duration: 300.ms),
                 const SizedBox(height: 20),
@@ -430,7 +434,7 @@ class _DetailRow extends StatelessWidget {
             width: 130,
             child: Text(label,
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.grey500)),
+                    .copyWith(color: AppTextStyles.textSecondaryColor)),
           ),
           Expanded(
             child: Text(value,

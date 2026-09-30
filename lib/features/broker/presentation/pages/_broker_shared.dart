@@ -139,7 +139,7 @@ class BrokerDetailRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.grey500),
+                  .copyWith(color: AppTextStyles.textSecondaryColor),
             ),
           ),
           Expanded(

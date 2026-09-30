@@ -341,7 +341,7 @@ class _UploadSheetState extends ConsumerState<_UploadSheet> {
                         color:
                             _selectedFile != null
                                 ? null
-                                : AppColors.lightTextHint,
+                                : AppTextStyles.textHintColor,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

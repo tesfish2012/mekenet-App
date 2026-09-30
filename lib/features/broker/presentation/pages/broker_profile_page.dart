@@ -430,7 +430,7 @@ class _DetailsTabState extends ConsumerState<_DetailsTab> {
             ] else ...[
               Text('No KYC document uploaded',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.grey400)),
+                    .copyWith(color: AppTextStyles.textSecondaryColor)),
             ],
           ],
         ),

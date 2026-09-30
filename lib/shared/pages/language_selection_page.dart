@@ -89,7 +89,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
               Text(
                 'welcome.subtitle'.tr(),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.grey500,
+                  color: AppTextStyles.textSecondaryColor,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -260,7 +260,7 @@ class _LanguageTile extends StatelessWidget {
                     style: AppTextStyles.titleSmall.copyWith(
                       color: isSelected
                           ? AppColors.primary
-                          : AppColors.lightTextPrimary,
+                          : AppTextStyles.textPrimaryColor,
                       fontWeight: FontWeight.w700,
                       fontSize: 17,
                     ),
@@ -269,7 +269,7 @@ class _LanguageTile extends StatelessWidget {
                   Text(
                     sublabel,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.grey500,
+                      color: AppTextStyles.textSecondaryColor,
                     ),
                   ),
                 ],

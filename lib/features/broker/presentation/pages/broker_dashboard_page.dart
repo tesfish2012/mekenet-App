@@ -339,8 +339,12 @@ class _KpiGrid extends StatelessWidget {
         label: 'Total Policies',
         value: '${stats.totalPolicies}',
         icon: Icons.folder_copy_rounded,
-        color: AppColors.grey700,
-        bg: AppColors.grey100,
+        color: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.primaryLight
+          : AppColors.grey700,
+        bg: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.darkCard
+          : AppColors.grey100,
       ),
     ];
 

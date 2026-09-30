@@ -194,7 +194,7 @@ class _NewClaimPageState extends ConsumerState<NewClaimPage> {
                                 ? AppFormatter.formatDate(_incidentDate)
                                 : 'Select incident date',
                             style: AppTextStyles.bodyLarge.copyWith(
-                              color: _incidentDate != null ? null : AppColors.lightTextHint,
+                              color: _incidentDate != null ? null : AppTextStyles.textHintColor,
                             ),
                           ),
                         ],

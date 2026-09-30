@@ -97,13 +97,12 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
   }
 
   Widget _datePickerTheme(BuildContext context, Widget? child) {
+    final theme = Theme.of(context);
     return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: const ColorScheme.light(
+      data: theme.copyWith(
+        colorScheme: theme.colorScheme.copyWith(
           primary: AppColors.primary,
           onPrimary: Colors.white,
-          onSurface: AppColors.lightTextPrimary,
-          surface: Colors.white,
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
@@ -118,7 +117,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
           ),
         ),
         dialogTheme: DialogThemeData(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
       ),
@@ -195,7 +194,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
     final policyAsync = ref.watch(policyByIdProvider(widget.policyId));
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
@@ -288,12 +287,16 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : Colors.white,
+                        color: isSelected
+                          ? AppColors.primary
+                          : Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkCard
+                            : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primary
-                            : AppColors.lightBorder,
+                            : Theme.of(context).colorScheme.outline,
                         width: isSelected ? 1.5 : 1,
                       ),
                       boxShadow: isSelected
@@ -324,7 +327,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                             style: AppTextStyles.titleSmall.copyWith(
                               color: isSelected
                                   ? Colors.white
-                                  : AppColors.lightTextPrimary,
+                                  : AppTextStyles.textPrimaryColor,
                             ),
                           ),
                         ),
@@ -335,7 +338,9 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                           style: AppTextStyles.titleSmall.copyWith(
                             color: isSelected
                                 ? Colors.white
-                                : AppColors.primary,
+                                : Theme.of(context).brightness == Brightness.dark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.primary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -362,21 +367,21 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
               },
               decoration: InputDecoration(
                 labelText: 'Start Date',
-                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
+                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppTextStyles.textSecondaryColor),
                 hintText: 'Select start date',
                 prefixIcon: const Icon(Icons.calendar_today_rounded,
                     size: 18, color: AppColors.primary),
                 suffixIcon: const Icon(Icons.edit_calendar_rounded,
                     size: 18, color: AppColors.primary),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.lightBorder),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.lightBorder),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -384,7 +389,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                 ),
               ),
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.lightTextPrimary,
+                color: AppTextStyles.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 10),
@@ -395,7 +400,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
               onTap: _pickEndDate,
               decoration: InputDecoration(
                 labelText: 'End Date',
-                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.grey500),
+                labelStyle: AppTextStyles.bodySmall.copyWith(color: AppTextStyles.textSecondaryColor),
                 hintText: 'Auto-filled from start date',
                 prefixIcon: const Icon(Icons.event_rounded,
                     size: 18, color: AppColors.primary),
@@ -419,7 +424,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                 helperStyle: AppTextStyles.caption.copyWith(color: AppColors.primary),
               ),
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.lightTextPrimary,
+                color: AppTextStyles.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 20),
@@ -527,7 +532,7 @@ class _ApplyPolicyPageState extends ConsumerState<ApplyPolicyPage> {
                     child: Text(
                       'I agree to the Terms & Conditions and Privacy Policy of this insurance product.',
                       style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.lightTextSecondary),
+                          color: AppTextStyles.textSecondaryColor),
                     ),
                   ),
                 ],
@@ -581,7 +586,7 @@ class _SummaryRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.grey600,
+                color: AppTextStyles.textSecondaryColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -597,7 +602,7 @@ class _SummaryRow extends StatelessWidget {
                       fontSize: 15,
                     )
                   : AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.lightTextPrimary,
+                      color: AppTextStyles.textPrimaryColor,
                       fontWeight: FontWeight.w600,
                     ),
               textAlign: TextAlign.end,

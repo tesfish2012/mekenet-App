@@ -24,6 +24,10 @@ class AppTextStyles {
   static Color get _textHint =>
       _isDark ? AppColors.darkTextHint : AppColors.lightTextHint;
 
+  static Color get textPrimaryColor => _textPrimary;
+  static Color get textSecondaryColor => _textSecondary;
+  static Color get textHintColor => _textHint;
+
   static TextStyle get displayLarge => GoogleFonts.poppins(
         fontSize: 32,
         fontWeight: FontWeight.w700,

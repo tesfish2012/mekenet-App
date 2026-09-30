@@ -9,6 +9,7 @@ class TermsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(title: Text('settings.terms'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

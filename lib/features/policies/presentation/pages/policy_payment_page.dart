@@ -172,7 +172,7 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
     final args = widget.args;
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
@@ -252,7 +252,7 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
             Text(
               'Choose how you want to pay your premium',
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.grey500),
+                  .copyWith(color: AppTextStyles.textSecondaryColor),
             ),
             const SizedBox(height: 16),
 
@@ -319,7 +319,7 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
                               style: AppTextStyles.titleSmall.copyWith(
                                 color: isSelected
                                     ? method.color
-                                    : AppColors.lightTextPrimary,
+                                    : AppTextStyles.textPrimaryColor,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -327,7 +327,7 @@ class _PolicyPaymentPageState extends ConsumerState<PolicyPaymentPage> {
                             Text(
                               method.subtitle,
                               style: AppTextStyles.bodySmall
-                                  .copyWith(color: AppColors.grey500),
+                                  .copyWith(color: AppTextStyles.textSecondaryColor),
                             ),
                           ],
                         ),
@@ -474,7 +474,7 @@ class _PaymentSuccessSheet extends StatelessWidget {
           Text(
             'Application Submitted!',
             style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.lightTextPrimary,
+              color: AppTextStyles.textPrimaryColor,
               fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
@@ -495,7 +495,7 @@ class _PaymentSuccessSheet extends StatelessWidget {
           Text(
             'Payment via ${method.label} will be processed upon approval',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.grey500,
+              color: AppTextStyles.textSecondaryColor,
             ),
             textAlign: TextAlign.center,
           ),

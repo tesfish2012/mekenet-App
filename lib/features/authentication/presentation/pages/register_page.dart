@@ -93,10 +93,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
               primary: AppColors.primary,
               onPrimary: Colors.white,
-              onSurface: AppColors.lightTextPrimary,
             ),
           ),
           child: child!,
@@ -244,7 +243,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               isAgent
                   ? 'Your agent registration has been submitted. Our team will verify your license and activate your account. You will receive an email once approved.'
                   : 'Your broker registration has been submitted. Our compliance team will verify your licensing documentation and activate your account. You will receive an email once approved.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightTextSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppTextStyles.textSecondaryColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -375,7 +374,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Text(
                   'Please select how you want to use Mekenet Insurance to continue.',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.lightTextSecondary,
+                    color: AppTextStyles.textSecondaryColor,
                   ),
                   textAlign: TextAlign.center,
                 ).animate().fadeIn(delay: 150.ms),
@@ -931,7 +930,7 @@ class _AccountTypeCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isSelected
                                   ? AppColors.primary
-                                  : AppColors.lightTextPrimary,
+                                  : AppTextStyles.textPrimaryColor,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -956,7 +955,7 @@ class _AccountTypeCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.lightTextSecondary,
+                          color: AppTextStyles.textSecondaryColor,
                         ),
                       ),
                     ],
@@ -993,7 +992,7 @@ class _AccountTypeCard extends StatelessWidget {
             Text(
               description,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.lightTextSecondary,
+                color: AppTextStyles.textSecondaryColor,
                 fontSize: 13,
               ),
             ),
@@ -1015,7 +1014,7 @@ class _AccountTypeCard extends StatelessWidget {
                         f,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 12,
-                          color: AppColors.lightTextPrimary,
+                          color: AppTextStyles.textPrimaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

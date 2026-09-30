@@ -427,7 +427,7 @@ class _Row extends StatelessWidget {
             width: 130,
             child: Text(label,
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.grey500)),
+                .copyWith(color: AppTextStyles.textSecondaryColor)),
           ),
           Expanded(
             child: Text(

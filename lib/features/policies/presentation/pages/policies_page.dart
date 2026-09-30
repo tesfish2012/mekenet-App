@@ -31,7 +31,7 @@ class _PoliciesPageState extends ConsumerState<PoliciesPage> {
     final renewalsAsync = ref.watch(myRenewalsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: RefreshIndicator(
         onRefresh: () async {
           if (_selectedTab == 0) {
@@ -356,13 +356,17 @@ class _InsuranceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => context.push('/policies/${insurance.id}'),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.lightBorder, width: 1),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withOpacity(0.07),
@@ -548,12 +552,15 @@ class _InfoCell extends StatelessWidget {
         children: [
           Text(label,
               style: AppTextStyles.labelSmall
-                  .copyWith(color: AppColors.grey400, fontSize: 10)),
+                .copyWith(color: AppTextStyles.textSecondaryColor, fontSize: 10)),
           const SizedBox(height: 3),
           Text(
             value,
             style: AppTextStyles.titleSmall.copyWith(
-              color: valueColor ?? AppColors.lightTextPrimary,
+                color: valueColor == AppColors.primary &&
+                    Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkTextPrimary
+                  : valueColor ?? AppTextStyles.textPrimaryColor,
               fontWeight: FontWeight.w600,
             ),
             overflow: TextOverflow.ellipsis,
@@ -595,6 +602,7 @@ class _SegmentTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -619,13 +627,17 @@ class _SegmentTab extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.white : AppColors.grey500,
+              color: isSelected
+                  ? Colors.white
+                  : AppTextStyles.textSecondaryColor,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? Colors.white : AppColors.grey600,
+                color: isSelected
+                    ? Colors.white
+                    : AppTextStyles.textSecondaryColor,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -636,13 +648,17 @@ class _SegmentTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Colors.white.withOpacity(0.2)
-                      : AppColors.grey200,
+                      : isDark
+                        ? AppColors.darkCard
+                        : AppColors.grey200,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '$count',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: isSelected ? Colors.white : AppColors.grey600,
+                    color: isSelected
+                        ? Colors.white
+                        : AppTextStyles.textSecondaryColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -768,7 +784,7 @@ class _RenewalCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Divider(height: 1, color: AppColors.lightBorder),
+                Divider(height: 1, color: Theme.of(context).colorScheme.outline),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -778,7 +794,7 @@ class _RenewalCard extends StatelessWidget {
                     Text(
                       'Dates: ${renewal.newStartDate ?? renewal.renewalDate ?? 'N/A'} → ${renewal.newEndDate ?? 'N/A'}',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.grey500,
+                        color: AppTextStyles.textSecondaryColor,
                         fontSize: 11,
                       ),
                     ),
@@ -828,7 +844,7 @@ class _RenewalCard extends StatelessWidget {
                     child: Text(
                       'Note: ${renewal.adminNotes}',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.lightTextPrimary,
+                        color: AppTextStyles.textPrimaryColor,
                       ),
                     ),
                   ),

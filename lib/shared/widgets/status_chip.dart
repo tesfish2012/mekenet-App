@@ -39,10 +39,18 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isNeutral = color == AppColors.grey500;
+    final effectiveColor = isDark && isNeutral
+      ? AppColors.darkTextSecondary
+      : color;
+    final effectiveBackground =
+      isDark && bgColor == AppColors.grey100 ? AppColors.darkCard : bgColor;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: effectiveBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -51,13 +59,13 @@ class StatusChip extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: effectiveColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 5),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: color,
+              color: effectiveColor,
               fontSize: fontSize,
               fontWeight: FontWeight.w600,
             ),

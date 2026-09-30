@@ -45,7 +45,7 @@ class EmptyView extends StatelessWidget {
             Text(
               title,
               style: AppTextStyles.headlineSmall.copyWith(
-                color: AppColors.lightTextPrimary,
+                color: AppTextStyles.textPrimaryColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -54,7 +54,7 @@ class EmptyView extends StatelessWidget {
               Text(
                 subtitle!,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.lightTextSecondary,
+                  color: AppTextStyles.textSecondaryColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -109,7 +109,7 @@ class ErrorView extends StatelessWidget {
             Text(
               'common.error'.tr(),
               style: AppTextStyles.headlineSmall.copyWith(
-                color: AppColors.lightTextPrimary,
+                color: AppTextStyles.textPrimaryColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -117,7 +117,7 @@ class ErrorView extends StatelessWidget {
             Text(
               message,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.lightTextSecondary,
+                color: AppTextStyles.textSecondaryColor,
               ),
               textAlign: TextAlign.center,
             ),
