@@ -168,6 +168,29 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> registerAgent(AgentRegisterRequest request) async {
+    state = const AuthState.loading();
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final result = await repo.registerAgent(request);
+      return result.fold(
+        (failure) {
+          state = AuthState.unauthenticated(failure.message);
+          return false;
+        },
+        (message) {
+          state = AuthState.unauthenticated(null, message);
+          return true;
+        },
+      );
+    } catch (e) {
+      state = AuthState.unauthenticated(
+        e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();

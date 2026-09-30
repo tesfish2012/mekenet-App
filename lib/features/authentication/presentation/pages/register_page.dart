@@ -15,6 +15,8 @@ import '../providers/auth_provider.dart';
 
 enum RegisterStep { selectRole, fillDetails }
 
+enum _RoleType { customer, agent, broker }
+
 class RegisterPage extends ConsumerStatefulWidget {
   final bool initialIsBroker;
 
@@ -28,7 +30,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   late RegisterStep _currentStep;
-  late bool _isBroker;
+  late _RoleType _roleType;
 
   // Common Fields
   final _nameCtrl = TextEditingController();
@@ -37,7 +39,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
-  // Broker Specific Fields
+  // Broker / Agent Shared Fields
   final _companyCtrl = TextEditingController();
   final _licenseCtrl = TextEditingController();
   final _expiryCtrl = TextEditingController();
@@ -46,14 +48,21 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _websiteCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
+  // Agent-only Field
+  final _officePhoneCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    _isBroker = widget.initialIsBroker;
+    _roleType = widget.initialIsBroker ? _RoleType.broker : _RoleType.customer;
     _currentStep = widget.initialIsBroker
         ? RegisterStep.fillDetails
         : RegisterStep.selectRole;
   }
+
+  // convenience getters
+  bool get _isBroker => _roleType == _RoleType.broker;
+  bool get _isAgent  => _roleType == _RoleType.agent;
 
   @override
   void dispose() {
@@ -70,6 +79,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _countryCtrl.dispose();
     _websiteCtrl.dispose();
     _notesCtrl.dispose();
+    _officePhoneCtrl.dispose();
     super.dispose();
   }
 
@@ -113,7 +123,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         context.showErrorSnackBar('Please select the broker license expiry date.');
         return;
       }
-
       final req = BrokerRegisterRequest(
         name: _nameCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
@@ -123,55 +132,68 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         licenseNumber: _licenseCtrl.text.trim(),
         licenseExpiry: _expiryCtrl.text.trim(),
         city: _cityCtrl.text.trim(),
-        country: _countryCtrl.text.trim().isEmpty
-            ? 'Ethiopia'
-            : _countryCtrl.text.trim(),
-        website: _websiteCtrl.text.trim().isEmpty
-            ? null
-            : _websiteCtrl.text.trim(),
-        notes:
-            _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+        country: _countryCtrl.text.trim().isEmpty ? 'Ethiopia' : _countryCtrl.text.trim(),
+        website: _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       );
-
-      final success =
-          await ref.read(authNotifierProvider.notifier).registerBroker(req);
-
+      final success = await ref.read(authNotifierProvider.notifier).registerBroker(req);
       if (!mounted) return;
-
       if (success) {
-        _showBrokerApprovalDialog();
+        _showApprovalDialog(isAgent: false);
       } else {
-        final errorMsg = ref.read(authNotifierProvider).errorMessage ??
-            'Broker registration failed. Please try again.';
+        final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'Broker registration failed. Please try again.';
         context.showErrorSnackBar(errorMsg);
       }
+
+    } else if (_isAgent) {
+      if (_expiryCtrl.text.trim().isEmpty) {
+        context.showErrorSnackBar('Please select the agent license expiry date.');
+        return;
+      }
+      final req = AgentRegisterRequest(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
+        phone: _phoneCtrl.text.trim(),
+        companyName: _companyCtrl.text.trim(),
+        licenseNumber: _licenseCtrl.text.trim(),
+        licenseExpiry: _expiryCtrl.text.trim(),
+        city: _cityCtrl.text.trim(),
+        country: _countryCtrl.text.trim().isEmpty ? 'Ethiopia' : _countryCtrl.text.trim(),
+        officePhone: _officePhoneCtrl.text.trim().isEmpty ? null : _officePhoneCtrl.text.trim(),
+        website: _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      );
+      final success = await ref.read(authNotifierProvider.notifier).registerAgent(req);
+      if (!mounted) return;
+      if (success) {
+        _showApprovalDialog(isAgent: true);
+      } else {
+        final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'Agent registration failed. Please try again.';
+        context.showErrorSnackBar(errorMsg);
+      }
+
     } else {
-      // Customer registration
+      // Customer
       final success = await ref.read(authNotifierProvider.notifier).register(
             name: _nameCtrl.text.trim(),
             email: _emailCtrl.text.trim(),
             password: _passwordCtrl.text,
-            phone: _phoneCtrl.text.trim().isEmpty
-                ? null
-                : _phoneCtrl.text.trim(),
+            phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
           );
-
       if (!mounted) return;
-
       if (success) {
-        final successMsg = ref.read(authNotifierProvider).successMessage ??
-            'Registration successful!';
+        final successMsg = ref.read(authNotifierProvider).successMessage ?? 'Registration successful!';
         context.showSuccessSnackBar(successMsg);
         context.go(AppConstants.routeDashboard);
       } else {
-        final errorMsg = ref.read(authNotifierProvider).errorMessage ??
-            'Registration failed. Please try again.';
+        final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'Registration failed. Please try again.';
         context.showErrorSnackBar(errorMsg);
       }
     }
   }
 
-  void _showBrokerApprovalDialog() {
+  void _showApprovalDialog({required bool isAgent}) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -197,9 +219,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             const SizedBox(height: 18),
             Text(
               'Application Submitted',
-              style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.headlineSmall.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
@@ -221,10 +241,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 14),
             Text(
-              'Your broker registration has been submitted. Our compliance team will verify your licensing documentation and activate your account. You will receive an email once approved.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.lightTextSecondary,
-              ),
+              isAgent
+                  ? 'Your agent registration has been submitted. Our team will verify your license and activate your account. You will receive an email once approved.'
+                  : 'Your broker registration has been submitted. Our compliance team will verify your licensing documentation and activate your account. You will receive an email once approved.',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightTextSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -271,7 +291,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           title: Text(
             _currentStep == RegisterStep.selectRole
                 ? 'Join Mekenet'
-                : (_isBroker ? 'Broker Registration' : 'Customer Registration'),
+                : (_isBroker ? 'Broker Registration'
+                    : (_isAgent ? 'Agent Registration' : 'Customer Registration')),
           ),
           centerTitle: true,
           leading: IconButton(
@@ -372,7 +393,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             icon: Icons.person_rounded,
             iconColor: const Color(0xFF0284C7),
             iconBg: const Color(0xFFE0F2FE),
-            isSelected: !_isBroker,
+            isSelected: _roleType == _RoleType.customer,
             tag: 'Instant Access',
             tagColor: const Color(0xFF0284C7),
             features: const [
@@ -380,11 +401,32 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               'Digital insurance card with QR code',
               'Online claims submission & tracking',
             ],
-            onTap: () => setState(() => _isBroker = false),
+            onTap: () => setState(() => _roleType = _RoleType.customer),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
           const SizedBox(height: 16),
 
-          // ── Option 2: Insurance Broker ─────────────────────────
+          // ── Option 2: Insurance Agent ──────────────────────────
+          _AccountTypeCard(
+            title: 'Insurance Agent',
+            subtitle: 'Licensed Individual Agent',
+            description:
+                'For licensed individual agents selling and servicing insurance policies on behalf of clients.',
+            icon: Icons.handshake_rounded,
+            iconColor: const Color(0xFF059669),
+            iconBg: const Color(0xFFD1FAE5),
+            isSelected: _roleType == _RoleType.agent,
+            tag: 'Agent Portal',
+            tagColor: const Color(0xFF059669),
+            features: const [
+              'Manage client policies & applications',
+              'Track commissions & performance',
+              'Submit and follow up on claims',
+            ],
+            onTap: () => setState(() => _roleType = _RoleType.agent),
+          ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
+          const SizedBox(height: 16),
+
+          // ── Option 3: Insurance Broker ─────────────────────────
           _AccountTypeCard(
             title: 'Insurance Broker',
             subtitle: 'Licensed Insurance Partner',
@@ -393,7 +435,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             icon: Icons.business_center_rounded,
             iconColor: const Color(0xFFD97706),
             iconBg: const Color(0xFFFEF3C7),
-            isSelected: _isBroker,
+            isSelected: _roleType == _RoleType.broker,
             tag: 'Partnership',
             tagColor: const Color(0xFFD97706),
             features: const [
@@ -401,8 +443,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               'Broker Dashboard & sales analytics',
               'Commission tracking & statements',
             ],
-            onTap: () => setState(() => _isBroker = true),
-          ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
+            onTap: () => setState(() => _roleType = _RoleType.broker),
+          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
           const SizedBox(height: 32),
 
           // Next Button
@@ -468,12 +510,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: BoxDecoration(
                 color: _isBroker
                     ? const Color(0xFFFEF3C7).withOpacity(0.7)
-                    : const Color(0xFFE0F2FE).withOpacity(0.7),
+                    : _isAgent
+                        ? const Color(0xFFD1FAE5).withOpacity(0.7)
+                        : const Color(0xFFE0F2FE).withOpacity(0.7),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _isBroker
                       ? const Color(0xFFF59E0B).withOpacity(0.4)
-                      : const Color(0xFF38BDF8).withOpacity(0.4),
+                      : _isAgent
+                          ? const Color(0xFF059669).withOpacity(0.4)
+                          : const Color(0xFF38BDF8).withOpacity(0.4),
                 ),
               ),
               child: Row(
@@ -481,11 +527,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   Icon(
                     _isBroker
                         ? Icons.business_center_rounded
-                        : Icons.person_rounded,
+                        : _isAgent
+                            ? Icons.handshake_rounded
+                            : Icons.person_rounded,
                     size: 20,
                     color: _isBroker
                         ? const Color(0xFFB45309)
-                        : const Color(0xFF0369A1),
+                        : _isAgent
+                            ? const Color(0xFF059669)
+                            : const Color(0xFF0369A1),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -498,7 +548,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             fontSize: 9.5,
                             color: _isBroker
                                 ? const Color(0xFF92400E)
-                                : const Color(0xFF0369A1),
+                                : _isAgent
+                                    ? const Color(0xFF065F46)
+                                    : const Color(0xFF0369A1),
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
                           ),
@@ -506,26 +558,25 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         Text(
                           _isBroker
                               ? 'Insurance Broker'
-                              : 'Individual Customer',
+                              : _isAgent
+                                  ? 'Insurance Agent'
+                                  : 'Individual Customer',
                           style: AppTextStyles.labelLarge.copyWith(
                             fontWeight: FontWeight.w700,
                             color: _isBroker
                                 ? const Color(0xFF78350F)
-                                : const Color(0xFF0C4A6E),
+                                : _isAgent
+                                    ? const Color(0xFF064E3B)
+                                    : const Color(0xFF0C4A6E),
                           ),
                         ),
                       ],
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentStep = RegisterStep.selectRole;
-                      });
-                    },
+                    onPressed: () => setState(() => _currentStep = RegisterStep.selectRole),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -534,7 +585,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       style: AppTextStyles.labelMedium.copyWith(
                         color: _isBroker
                             ? const Color(0xFFB45309)
-                            : const Color(0xFF0369A1),
+                            : _isAgent
+                                ? const Color(0xFF059669)
+                                : const Color(0xFF0369A1),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -544,30 +597,41 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 18),
 
-            // Broker notice banner
-            if (_isBroker) ...[
+            // Broker / Agent notice banner
+            if (_isBroker || _isAgent) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
+                  color: _isAgent
+                      ? const Color(0xFFECFDF5)
+                      : const Color(0xFFFFFBEB),
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: const Color(0xFFFDE68A)),
+                  border: Border.all(
+                    color: _isAgent
+                        ? const Color(0xFF6EE7B7)
+                        : const Color(0xFFFDE68A),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.info_outline_rounded,
-                      color: Color(0xFFD97706),
+                      color: _isAgent
+                          ? const Color(0xFF059669)
+                          : const Color(0xFFD97706),
                       size: 18,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Broker accounts are reviewed and activated by our team upon licensing verification (PENDING_APPROVAL).',
+                        _isAgent
+                            ? 'Agent accounts are reviewed and activated by our team upon license verification (PENDING_APPROVAL).'
+                            : 'Broker accounts are reviewed and activated by our team upon licensing verification (PENDING_APPROVAL).',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: const Color(0xFF92400E),
+                          color: _isAgent
+                              ? const Color(0xFF065F46)
+                              : const Color(0xFF92400E),
                           fontSize: 11.5,
                         ),
                       ),
@@ -580,12 +644,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             // Section 1: Contact Information
             _SectionTitle(
-                title: _isBroker ? '1. Account & Contact Details' : 'Personal Information'),
+                title: (_isBroker || _isAgent)
+                    ? '1. Account & Contact Details'
+                    : 'Personal Information'),
             const SizedBox(height: 12),
 
             // Full Name
             AppTextField(
-              label: _isBroker
+              label: (_isBroker || _isAgent)
                   ? 'Full Name / Contact Person'
                   : 'auth.full_name'.tr(),
               controller: _nameCtrl,
@@ -598,7 +664,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             // Email
             AppTextField(
-              label: _isBroker ? 'Work Email Address' : 'auth.email'.tr(),
+              label: (_isBroker || _isAgent) ? 'Work Email Address' : 'auth.email'.tr(),
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               prefixIcon: Icons.email_outlined,
@@ -609,13 +675,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
             // Phone
             AppTextField(
-              label: _isBroker
-                  ? 'Phone Number (Required)'
+              label: (_isBroker || _isAgent)
+                  ? 'Mobile Phone (Required)'
                   : '${'auth.phone_number'.tr()} (${'common.optional'.tr()})',
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               prefixIcon: Icons.phone_outlined,
-              validator: (v) => _isBroker
+              validator: (v) => (_isBroker || _isAgent)
                   ? Validators.required(v, fieldName: 'Phone Number')
                   : Validators.phone(v),
               textInputAction: TextInputAction.next,
@@ -638,48 +704,54 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 20),
 
-            // Section 2: Brokerage & Licensing (Broker only)
-            if (_isBroker) ...[
-              const _SectionTitle(title: '2. Brokerage & Licensing'),
+            // Section 2: Agency & Licensing (Agent or Broker)
+            if (_isBroker || _isAgent) ...[
+              _SectionTitle(
+                title: _isAgent
+                    ? '2. Agency & Licensing'
+                    : '2. Brokerage & Licensing',
+              ),
               const SizedBox(height: 12),
 
               // Company Name
               AppTextField(
-                label: 'Company / Brokerage Name',
+                label: _isAgent
+                    ? 'Agency / Company Name'
+                    : 'Company / Brokerage Name',
                 controller: _companyCtrl,
                 prefixIcon: Icons.business_outlined,
-                validator: (v) =>
-                    Validators.required(v, fieldName: 'Company Name'),
+                validator: (v) => Validators.required(v, fieldName: 'Company Name'),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 14),
 
               // License Number
               AppTextField(
-                label: 'Insurance Broker License Number',
+                label: _isAgent
+                    ? 'Agent License Number'
+                    : 'Insurance Broker License Number',
                 controller: _licenseCtrl,
                 prefixIcon: Icons.badge_outlined,
-                validator: (v) =>
-                    Validators.required(v, fieldName: 'License Number'),
+                hint: 'e.g. AGT-2024-001',
+                validator: (v) => Validators.required(v, fieldName: 'License Number'),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 14),
 
-              // License Expiry Date (Picker)
+              // License Expiry Date
               AppTextField(
-                label: 'License Expiry Date (YYYY-MM-DD)',
+                label: 'License Expiry Date',
                 controller: _expiryCtrl,
                 prefixIcon: Icons.calendar_today_outlined,
                 suffix: const Icon(Icons.arrow_drop_down),
                 readOnly: true,
                 onTap: _pickExpiryDate,
-                validator: (v) => Validators.required(v,
-                    fieldName: 'License Expiry Date'),
+                validator: (v) => Validators.required(v, fieldName: 'License Expiry Date'),
               ),
               const SizedBox(height: 20),
 
-              // Section 3: Location & Details (Broker only)
-              const _SectionTitle(title: '3. Location & Notes'),
+              // Section 3: Location & Contact
+              const _SectionTitle(title: '3. Location & Contact'),
               const SizedBox(height: 12),
 
               Row(
@@ -689,8 +761,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       label: 'City',
                       controller: _cityCtrl,
                       prefixIcon: Icons.location_city_outlined,
-                      validator: (v) =>
-                          Validators.required(v, fieldName: 'City'),
+                      validator: (v) => Validators.required(v, fieldName: 'City'),
                       textInputAction: TextInputAction.next,
                     ),
                   ),
@@ -700,8 +771,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       label: 'Country',
                       controller: _countryCtrl,
                       prefixIcon: Icons.flag_outlined,
-                      validator: (v) =>
-                          Validators.required(v, fieldName: 'Country'),
+                      validator: (v) => Validators.required(v, fieldName: 'Country'),
                       textInputAction: TextInputAction.next,
                     ),
                   ),
@@ -709,9 +779,22 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               ),
               const SizedBox(height: 14),
 
+              // Office Phone — agent only
+              if (_isAgent) ...[
+                AppTextField(
+                  label: 'Office Phone (Optional)',
+                  controller: _officePhoneCtrl,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: Icons.phone_in_talk_outlined,
+                  hint: 'e.g. +251-11-1234567',
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 14),
+              ],
+
               // Website
               AppTextField(
-                label: 'Company Website (Optional)',
+                label: 'Website (Optional)',
                 controller: _websiteCtrl,
                 prefixIcon: Icons.language_outlined,
                 hint: 'https://example.com',
@@ -738,7 +821,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             AppButton(
               label: _isBroker
                   ? 'Submit Broker Application'
-                  : 'auth.sign_up'.tr(),
+                  : _isAgent
+                      ? 'Submit Agent Application'
+                      : 'auth.sign_up'.tr(),
               onPressed: _submit,
               isLoading: isLoading,
             ),

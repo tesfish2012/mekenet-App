@@ -16,6 +16,7 @@ abstract class AuthRepository {
   });
 
   Future<Result<String>> registerBroker(BrokerRegisterRequest request);
+  Future<Result<String>> registerAgent(AgentRegisterRequest request);
 
   Future<Result<void>> logout();
 

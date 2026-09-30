@@ -10,6 +10,7 @@ abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginRequest request);
   Future<AuthResponseModel> register(RegisterRequest request);
   Future<String> registerBroker(BrokerRegisterRequest request);
+  Future<String> registerAgent(AgentRegisterRequest request);
 }
 
 @LazySingleton(as: AuthRemoteDataSource)
@@ -64,6 +65,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     }
     return map['message'] as String? ?? 'Broker registration submitted successfully.';
+  }
+
+  @override
+  Future<String> registerAgent(AgentRegisterRequest request) async {
+    final response = await _dio.post(
+      ApiEndpoints.agentRegister,
+      data: request.toJson(),
+    );
+
+    final body = response.data;
+    if (body is! Map) {
+      return 'Agent registration submitted successfully.';
+    }
+    final map = Map<String, dynamic>.from(body);
+    if (map['success'] == false) {
+      final msg = map['message'] as String? ??
+          map['error'] as String? ??
+          'Agent registration failed';
+      throw ServerException(
+        message: msg,
+        statusCode: response.statusCode ?? 200,
+      );
+    }
+    return map['message'] as String? ?? 'Agent registration submitted successfully.';
   }
 
   // ── Response parsing ──────────────────────────────────────

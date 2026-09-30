@@ -6,6 +6,7 @@ class ApiEndpoints {
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String brokerRegister = '/auth/broker/register';
+  static const String agentRegister = '/auth/agent/register';
 
   // ── Portal – Dashboard ────────────────────────────────────
   static const String customerStats = '/portal/dashboard/customer-stats';

@@ -61,6 +61,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<String>> registerAgent(AgentRegisterRequest request) async {
+    try {
+      final message = await _remote.registerAgent(request);
+      return success(message);
+    } catch (e) {
+      return failure(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<void>> logout() async {
     try {
       await _secureStorage.clearTokens();
