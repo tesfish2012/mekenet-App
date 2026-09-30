@@ -8,7 +8,6 @@ import '../../core/services/app_update_service.dart';
 import '../../core/storage/preferences_service.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -48,88 +47,40 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.accent,
-      body: Container(
+      backgroundColor: Colors.white,
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: AppColors.accentGradient,
-          ),
-        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(flex: 2),
 
-            // Logo – large circle with white bg, no clipping
-            Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.15),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(28),
-              child: Image.asset(
-                AppConstants.logoAsset,
-                fit: BoxFit.contain,
-              ),
+            // Full logo — no circle clip, no padding crop
+            Image.asset(
+              AppConstants.logoAsset,
+              width: MediaQuery.of(context).size.width * 0.68,
+              fit: BoxFit.contain,
             )
                 .animate()
                 .fadeIn(duration: 600.ms)
-                .scale(begin: const Offset(0.7, 0.7)),
-
-            const SizedBox(height: 28),
-
-            // App name in brand navy
-            Text(
-              AppConstants.appName,
-              style: AppTextStyles.displayMedium.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            )
-                .animate()
-                .fadeIn(delay: 300.ms, duration: 600.ms)
-                .slideY(begin: 0.3),
-
-            const SizedBox(height: 8),
-
-            // Tagline
-            Text(
-              AppConstants.appTagline,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.primary.withOpacity(0.7),
-              ),
-            )
-                .animate()
-                .fadeIn(delay: 500.ms, duration: 600.ms),
+                .scale(begin: const Offset(0.85, 0.85)),
 
             const Spacer(flex: 2),
 
             // Loading indicator in brand navy
             SizedBox(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  AppColors.primary.withOpacity(0.7),
+                  AppColors.primary.withOpacity(0.6),
                 ),
               ),
-            ).animate().fadeIn(delay: 800.ms),
+            ).animate().fadeIn(delay: 700.ms),
 
-            const SizedBox(height: 48),
+            const SizedBox(height: 52),
           ],
         ),
       ),
