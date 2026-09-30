@@ -12,6 +12,7 @@ import '../../../../features/authentication/presentation/providers/auth_provider
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_card.dart';
+import '../../../../shared/widgets/language_toggle_button.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -76,7 +77,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    final language = ref.watch(languageProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text('settings.title'.tr())),
@@ -113,20 +113,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   icon: Icons.language_rounded,
                   iconColor: AppColors.secondary,
                   title: 'settings.language'.tr(),
-                  trailing: DropdownButton<String>(
-                    value: language,
-                    underline: const SizedBox.shrink(),
-                    items: const [
-                      DropdownMenuItem(value: 'en', child: Text('English')),
-                      DropdownMenuItem(value: 'am', child: Text('አማርኛ')),
-                    ],
-                    onChanged: (v) async {
-                      if (v == null) return;
-                      ref.read(languageProvider.notifier).state = v;
-                      await context.setLocale(Locale(v));
-                      await getIt<PreferencesService>().setLanguage(v);
-                    },
-                  ),
+                  trailing: const LanguageToggleButton(onDark: false),
                 ),
               ],
             ),

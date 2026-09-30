@@ -1,5 +1,15 @@
 {
   "app_name": "Mekenet Insurance",
+  "welcome": {
+    "title": "እንኳን ደህና መጡ",
+    "subtitle": "የኢትዮጵያ ታማኝ ዲጂታል የኢንሹራንስ መድረክ",
+    "choose_language": "ለመጀመር ቋንቋዎን ይምረጡ",
+    "english": "English",
+    "amharic": "አማርኛ",
+    "continue": "ቀጥል",
+    "language_label": "Language / ቋንቋ"
+  },
+
   "common": {
     "loading": "እየጫነ ነው...",
     "error": "ስህተት ተከስቷል",

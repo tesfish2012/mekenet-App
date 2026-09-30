@@ -1,4 +1,13 @@
 {
+  "welcome": {
+    "title": "Welcome to Mekenet",
+    "subtitle": "Ethiopia's trusted digital insurance platform",
+    "choose_language": "Choose your language to get started",
+    "english": "English",
+    "amharic": "አማርኛ",
+    "continue": "Continue",
+    "language_label": "Language / ቋንቋ"
+  },
 
   "common": {
     "loading": "Loading...",

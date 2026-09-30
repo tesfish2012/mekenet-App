@@ -37,6 +37,7 @@ import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/support/presentation/pages/support_page.dart';
 import '../../features/support/presentation/pages/faq_page.dart';
+import '../../shared/pages/language_selection_page.dart';
 import '../../shared/pages/splash_page.dart';
 import '../../shared/pages/not_found_page.dart';
 import '../../shared/pages/about_page.dart';
@@ -84,6 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Public routes — accessible without auth
       final publicRoutes = [
+        AppConstants.routeLanguage,
         AppConstants.routeOnboarding,
         AppConstants.routeLogin,
         AppConstants.routeRegister,
@@ -100,6 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (isAuthenticated && (location == AppConstants.routeLogin ||
           location == AppConstants.routeOnboarding ||
+          location == AppConstants.routeLanguage ||
           location == '/register')) {
         return AppConstants.routeDashboard;
       }
@@ -112,6 +115,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppConstants.routeSplash,
         name: 'splash',
         builder: (context, state) => const SplashPage(),
+      ),
+
+      // ── Language Selection ────────────────────────────────
+      GoRoute(
+        path: AppConstants.routeLanguage,
+        name: 'language',
+        pageBuilder: (context, state) => _fadeTransition(
+          state: state,
+          child: const LanguageSelectionPage(),
+        ),
       ),
 
       // ── Onboarding ───────────────────────────────────────

@@ -25,6 +25,12 @@ class PreferencesService {
   String getLanguage() =>
       _prefs.getString(AppConstants.languageKey) ?? 'en';
 
+  Future<void> setLanguageDone() =>
+      _prefs.setBool(AppConstants.languageDoneKey, true);
+
+  bool isLanguageDone() =>
+      _prefs.getBool(AppConstants.languageDoneKey) ?? false;
+
   // ── Onboarding ────────────────────────────────────────────
 
   Future<void> setOnboardingDone() =>

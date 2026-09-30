@@ -10,6 +10,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/extensions/context_extensions.dart';
+import '../../../../shared/widgets/language_toggle_button.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -83,8 +84,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: SafeArea(
-        child: SingleChildScrollView(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Theme(
             data: Theme.of(context).copyWith(
@@ -370,6 +373,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           ),
         ),
+      ),
+
+          // ── Language toggle — floats top-right ──────────
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12, right: 16),
+                child: const LanguageToggleButton(onDark: true),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

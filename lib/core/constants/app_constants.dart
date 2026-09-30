@@ -43,6 +43,7 @@ class AppConstants {
   // SharedPrefs Keys
   static const String themeKey = 'theme_mode';
   static const String languageKey = 'language_code';
+  static const String languageDoneKey = 'language_done';
   static const String onboardingKey = 'onboarding_done';
   static const String fcmTokenKey = 'fcm_token';
 
@@ -64,6 +65,7 @@ class AppConstants {
 
   // Routes names
   static const String routeSplash = '/';
+  static const String routeLanguage = '/language';
   static const String routeOnboarding = '/onboarding';
   static const String routeLogin = '/login';
   static const String routeRegister = '/register';

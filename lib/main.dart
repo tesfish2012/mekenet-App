@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/config/injectable_config.dart';
 import 'core/config/router.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
+import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'shared/theme/app_theme.dart';
 import 'shared/theme/app_text_styles.dart';
 
@@ -60,6 +61,18 @@ class MekenetinsuranceApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     AppTextStyles.brightness = _resolveBrightness(themeMode);
+
+    // Watch language at root level — updates the whole app when it changes
+    ref.listen<String>(languageProvider, (_, code) {
+      final locale = Locale(code);
+      // Apply to easy_localization at the root context via the router's navigator
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = router.routerDelegate.navigatorKey.currentContext;
+        if (ctx != null && ctx.mounted) {
+          ctx.setLocale(locale);
+        }
+      });
+    });
 
     return ScreenUtilInit(
       designSize: const Size(390, 844), // iPhone 14 base
