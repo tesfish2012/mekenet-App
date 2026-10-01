@@ -64,12 +64,12 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
         if(s.hasError)return Padding(padding:const EdgeInsets.all(24),child:OutlinedButton.icon(onPressed:()=>setState(()=>future=load()),icon:const Icon(Icons.refresh),label:const Text('Try again')));
         final list=(s.data??[]).where((q)=>[value(q,['quoteNumber','quoteNo','id'],'Quote'),value(q,['customerName','customer','name'],'Customer'),value(q,['status'],'Pending'),value(q,['policyType','policyTypeName'],'')].join(' ').toLowerCase().contains(search)).toList();
         if(list.isEmpty)return const Padding(padding:EdgeInsets.all(40),child:Center(child:Text('No quotes found')));
-        return Column(children:list.map((q)=>Card(margin:const EdgeInsets.symmetric(horizontal:16,vertical:6),child:ListTile(
+        return Column(children:[...list.map((q)=>Card(margin:const EdgeInsets.symmetric(horizontal:16,vertical:6),child:ListTile(
           leading:const CircleAvatar(child:Icon(Icons.description_outlined)),
           title:Text(value(q,['quoteNumber','quoteNo','id'],'Quote')),
           subtitle:Text(value(q,['customerName','customer','name'],'Customer')+' • '+value(q,['policyType','policyTypeName'],'Policy')),
           trailing:Text(value(q,['status'],'Pending'),style:AppTextStyles.labelSmall.copyWith(color:AppColors.primary,fontWeight:FontWeight.w700)),
-        )).toList()..add(const SizedBox(height:100)));
+        ))), const SizedBox(height:100)]);
       })),
     ])));
 }
