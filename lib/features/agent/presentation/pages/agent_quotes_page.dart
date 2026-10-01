@@ -84,7 +84,7 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
     int policyTermMonths = 12;
     String gender = 'M';
     String smokerStatus = 'NO';
-    String occupationClass = 'A';
+    final occupationClass = TextEditingController(text: 'A');
     String healthPlanTier = 'STANDARD';
     String constructionType = 'CONCRETE';
     String occupancyType = 'OFFICE';
@@ -284,7 +284,7 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
         ),
       );
     } finally {
-      for (final c in [policyId,sumAssured,lifeName,dob,beneficiary,beneficiaryRelationship,propertyAddress,cargoDescription,cargoOrigin,cargoDestination,destinationCountry,preExisting,dependants,travellers,floorArea,yearBuilt,departureDate,returnDate,extraData,hazardousDescription]) c.dispose();
+      for (final c in [policyId,sumAssured,lifeName,dob,beneficiary,beneficiaryRelationship,propertyAddress,cargoDescription,cargoOrigin,cargoDestination,destinationCountry,preExisting,dependants,travellers,floorArea,yearBuilt,departureDate,returnDate,extraData,hazardousDescription,occupationClass]) c.dispose();
     }
   }
 
@@ -310,9 +310,10 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
           padding: const EdgeInsets.all(16),
           child: TextField(onChanged: (v) => setState(() => search = v.toLowerCase()), decoration: InputDecoration(hintText: 'Search quotes', prefixIcon: const Icon(Icons.search), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
         )),
-        SliverToBoxAdapter(child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: future,
-          builder: (context, s) {
+        SliverToBoxAdapter(
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: future,
+            builder: (context, s) {
             if (s.connectionState == ConnectionState.waiting) return const Padding(padding: EdgeInsets.all(28), child: LoadingView());
             if (s.hasError) return Padding(padding: const EdgeInsets.all(24), child: OutlinedButton.icon(onPressed: () => setState(() => future = load()), icon: const Icon(Icons.refresh), label: const Text('Try again')));
             final list = (s.data ?? []).where((q) => [
@@ -322,23 +323,31 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
               value(q, ['policyTitle', 'policyTypeName'], ''),
             ].join(' ').toLowerCase().contains(search)).toList();
             if (list.isEmpty) return const Padding(padding: EdgeInsets.all(40), child: Center(child: Text('No quotes found')));
-            return Column(children: [
-              ...list.map((q) => Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: ListTile(
-                  leading: CircleAvatar(child: Text(value(q, ['policyTypeEmoji'], '📄'))),
-                  title: Text(value(q, ['quoteNumber'], 'Quote')),
-                  subtitle: Text('${value(q, ['customerName'], 'Customer')} • ${value(q, ['policyTitle', 'policyTypeName'], 'Policy')}'),
-                  trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text(value(q, ['status'], 'DRAFT'), style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
-                    Text(money(q['totalAmount']), style: AppTextStyles.bodySmall),
-                  ]),
-                ),
-              )),
-              const SizedBox(height: 100),
-            ]);
+            return Column(
+              children: [
+                for (final q in list)
+                  Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: ListTile(
+                      leading: CircleAvatar(child: Text(value(q, ['policyTypeEmoji'], '📄'))),
+                      title: Text(value(q, ['quoteNumber'], 'Quote')),
+                      subtitle: Text('${value(q, ['customerName'], 'Customer')} • ${value(q, ['policyTitle', 'policyTypeName'], 'Policy')}'),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(value(q, ['status'], 'DRAFT'), style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                          Text(money(q['totalAmount']), style: AppTextStyles.bodySmall),
+                        ],
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 100),
+              ],
+            );
           },
-        )),
+        ),
+        ),
       ],
     ),
   );
