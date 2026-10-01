@@ -38,7 +38,26 @@ class _AgentEndorsementsPageState extends State<AgentEndorsementsPage>{
       ]))),
       SliverToBoxAdapter(child:Padding(padding:const EdgeInsets.all(16),child:TextField(controller:id,keyboardType:TextInputType.number,decoration:InputDecoration(labelText:'Insurance ID',prefixIcon:const Icon(Icons.shield_outlined),suffixIcon:IconButton(onPressed:loading?null:load,icon:const Icon(Icons.search)))))),
       if(loading)const SliverToBoxAdapter(child:LinearProgressIndicator()),
-      SliverList(delegate:SliverChildBuilderDelegate((context,i){final e=items[i];return Card(margin:const EdgeInsets.symmetric(horizontal:16,vertical:5),child:ListTile(leading:const CircleAvatar(child:Icon(Icons.edit_document)),title:Text(value(e,['type','endorsementType','title'],'Endorsement')),subtitle:Text(value(e,['description','request','reason'],'Mid-term change')),trailing:Text(value(e,['status'],'Pending'),style:AppTextStyles.labelSmall.copyWith(color:AppColors.primary)));},childCount:items.length)),
+      SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, i) {
+            final e = items[i];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+              child: ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.edit_document)),
+                title: Text(value(e, ['type', 'endorsementType', 'title'], 'Endorsement')),
+                subtitle: Text(value(e, ['description', 'request', 'reason'], 'Mid-term change')),
+                trailing: Text(
+                  value(e, ['status'], 'Pending'),
+                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
+                ),
+              ),
+            );
+          },
+          childCount: items.length,
+        ),
+      ),
       const SliverToBoxAdapter(child:SizedBox(height:100))
     ]));
 }
