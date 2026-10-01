@@ -7,6 +7,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../../../features/broker/presentation/pages/broker_dashboard_page.dart';
+import '../../../../features/agent/presentation/pages/agent_dashboard_page.dart';
 import '../../../../features/policies/data/models/policy_model.dart';
 import '../../../../features/policies/presentation/providers/policies_provider.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -24,6 +25,11 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+
+    // Agents get their dedicated dashboard.
+    if (user?.isAgent == true) {
+      return const AgentDashboardPage();
+    }
 
     // Broker users get their dedicated portal dashboard
     if (user?.isBroker == true) {
