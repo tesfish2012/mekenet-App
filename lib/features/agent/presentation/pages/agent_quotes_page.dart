@@ -330,7 +330,7 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
                       'lineOfBusiness': lineOfBusiness,
                       'paymentFrequency': paymentFrequency,
                       'policyTermMonths': policyTermMonths,
-                      'coverStartDate': dateOnly(now),
+                      'startDate': dateOnly(now),
                       'sumAssured': sa,
                       'lifeAssuredName': lifeName.text.trim(),
                       'dateOfBirth': start,
