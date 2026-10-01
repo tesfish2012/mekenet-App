@@ -15,12 +15,15 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final isBroker = user?.isBroker ?? false;
+    final isAgent = user?.isAgent ?? false;
 
     return Scaffold(
       body: child,
       bottomNavigationBar: isBroker
           ? const _BrokerBottomNav()
-          : const _CustomerBottomNav(),
+          : isAgent
+              ? const _AgentBottomNav()
+              : const _CustomerBottomNav(),
     );
   }
 }
@@ -40,6 +43,33 @@ class _CustomerBottomNav extends StatelessWidget {
       _NavItem(icon: Icons.assignment_rounded, label: 'claims.title'.tr(), path: '/claims'),
       _NavItem(icon: Icons.payment_rounded, label: 'payments.title'.tr(), path: '/payments'),
       _NavItem(icon: Icons.person_rounded, label: 'profile.title'.tr(), path: '/profile'),
+    ];
+
+    int selectedIndex = items.indexWhere(
+      (item) => location.startsWith(item.path),
+    );
+    if (selectedIndex < 0) selectedIndex = 0;
+
+    return _NavBar(items: items, selectedIndex: selectedIndex);
+  }
+}
+
+// ── Agent bottom nav ──────────────────────────────────────
+// Keep agent navigation focused on day-to-day policy servicing.
+// Each item uses an existing registered route.
+class _AgentBottomNav extends StatelessWidget {
+  const _AgentBottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+
+    final items = [
+      _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
+      _NavItem(icon: Icons.shield_rounded, label: 'Policies', path: '/policies'),
+      _NavItem(icon: Icons.assignment_rounded, label: 'Claims', path: '/claims'),
+      _NavItem(icon: Icons.folder_open_rounded, label: 'Documents', path: '/documents'),
+      _NavItem(icon: Icons.person_rounded, label: 'Profile', path: '/profile'),
     ];
 
     int selectedIndex = items.indexWhere(
