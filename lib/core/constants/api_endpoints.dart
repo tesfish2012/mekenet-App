@@ -78,6 +78,15 @@ class ApiEndpoints {
   static const String agentCustomers = '/portal/agent/customers';
   static String agentCustomerById(int id) => '/portal/agent/customers/$id';
   static String agentCustomerDetail(int id) => '/portal/agent/customers/$id/detail';
+  static const String agentDocumentTypes = '/portal/document-types';
+  static const String agentPolicyDurations = '/portal/policy-durations';
+  static const String agentPolicyFors = '/portal/policy-fors';
+  static const String agentPolicySubTypes = '/portal/policy-sub-types';
+  static const String agentQuotes = '/portal/quotes';
+  static String agentQuoteById(int id) => '/portal/quotes/$id';
+  static const String agentEndorsements = '/portal/endorsements';
+  static String agentEndorsementById(int id) => '/portal/endorsements/$id';
+  static String agentEndorsementsForInsurance(int insuranceId) => '/portal/endorsements/insurance/$insuranceId';
 
   // ── Portal – Broker ──────────────────────────────────────
   static const String brokerDashboard = '/portal/broker/dashboard';
