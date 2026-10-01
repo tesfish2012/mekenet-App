@@ -64,6 +64,91 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
     return joined.isEmpty ? 'Customer' : joined;
   }
 
+  Future<void> _showEditCustomerDialog(Map<String, dynamic> customer) async {
+    final id = int.tryParse(_firstValue(customer, ['id', 'customerId']));
+    if (id == null) return;
+
+    final firstName = TextEditingController(text: _firstValue(customer, ['firstName', 'firstname']));
+    final lastName = TextEditingController(text: _firstValue(customer, ['lastName', 'lastname']));
+    final email = TextEditingController(text: _firstValue(customer, ['email', 'emailAddress']));
+    final phone = TextEditingController(text: _firstValue(customer, ['phone', 'phoneNumber', 'mobile']));
+    final formKey = GlobalKey<FormState>();
+
+    try {
+      final shouldSave = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Edit customer'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: firstName,
+                    decoration: const InputDecoration(labelText: 'First name'),
+                    validator: (value) => value == null || value.trim().isEmpty ? 'First name is required' : null,
+                  ),
+                  TextFormField(
+                    controller: lastName,
+                    decoration: const InputDecoration(labelText: 'Last name'),
+                    validator: (value) => value == null || value.trim().isEmpty ? 'Last name is required' : null,
+                  ),
+                  TextFormField(controller: email, decoration: const InputDecoration(labelText: 'Email')),
+                  TextFormField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone')),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Save changes'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldSave != true || !mounted) return;
+      await getIt<Dio>().put(
+        ApiEndpoints.agentCustomerById(id),
+        data: {
+          'firstName': firstName.text.trim(),
+          'lastName': lastName.text.trim(),
+          'email': email.text.trim(),
+          'phone': phone.text.trim(),
+        },
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer updated successfully')),
+      );
+      await _refresh();
+    } on DioException catch (error) {
+      if (!mounted) return;
+      final data = error.response?.data;
+      final message = data is Map
+          ? (data['message'] ?? data['error'] ?? 'Unable to update customer').toString()
+          : 'Unable to update customer. Check the required fields.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to update customer. Please try again.')),
+      );
+    } finally {
+      firstName.dispose();
+      lastName.dispose();
+      email.dispose();
+      phone.dispose();
+    }
+  }
+
   void _showCustomerDetails(Map<String, dynamic> customer) {
     final id = int.tryParse(_firstValue(customer, ['id', 'customerId']));
     if (id == null) {
@@ -141,6 +226,11 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                             style: AppTextStyles.titleLarge,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
+                        ),
+                        IconButton(
+                          tooltip: 'Edit customer',
+                          onPressed: () => _showEditCustomerDialog(details),
+                          icon: const Icon(Icons.edit_outlined),
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(sheetContext),
