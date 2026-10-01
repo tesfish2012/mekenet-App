@@ -141,6 +141,12 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to update customer. Please try again.')),
       );
+      if (created == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Customer created successfully')),
+        );
+        await _refresh();
+      }
     } finally {
       firstName.dispose();
       lastName.dispose();
@@ -364,8 +370,9 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
     }
 
     try {
-      await showDialog<void>(
+      final created = await showDialog<bool>(
         context: context,
+        barrierDismissible: false,
         builder: (dialogContext) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
             title: const Text('Add customer'),
@@ -498,22 +505,20 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                         'notes': notes.text.trim(),
                       },
                     );
-                    if (!mounted) return;
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(this.context).showSnackBar(
-                      const SnackBar(content: Text('Customer created successfully')),
-                    );
-                    await _refresh();
+                    if (!dialogContext.mounted) return;
+                    Navigator.of(dialogContext).pop(true);
                   } on DioException catch (error) {
+                    if (!dialogContext.mounted) return;
                     setDialogState(() => submitting = false);
                     final response = error.response?.data;
                     final message = response is Map
                         ? (response['message'] ?? response['error'] ?? 'Unable to create customer').toString()
                         : 'Unable to create customer. Check the required customer fields.';
-                    ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text(message)));
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(message)));
                   } catch (_) {
+                    if (!dialogContext.mounted) return;
                     setDialogState(() => submitting = false);
-                    ScaffoldMessenger.of(this.context).showSnackBar(
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
                       const SnackBar(content: Text('Unable to create customer. Please try again.')),
                     );
                   }
