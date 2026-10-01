@@ -17,6 +17,8 @@ import '../../features/broker/presentation/pages/broker_endorsements_page.dart';
 import '../../features/broker/presentation/pages/broker_policies_page.dart';
 import '../../features/broker/presentation/pages/broker_profile_page.dart';
 import '../../features/agent/presentation/pages/agent_customers_page.dart';
+import '../../features/agent/presentation/pages/agent_quotes_page.dart';
+import '../../features/agent/presentation/pages/agent_endorsements_page.dart';
 import '../../features/claims/presentation/pages/claims_page.dart';
 import '../../features/claims/presentation/pages/claim_detail_page.dart';
 import '../../features/claims/presentation/pages/new_claim_page.dart';
@@ -241,6 +243,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               state: state,
               child: const AgentCustomersPage(),
             ),
+          ),
+
+          GoRoute(
+            path: '/agent/quotes',
+            name: 'agent-quotes',
+            pageBuilder: (context, state) => _noTransition(state: state, child: const AgentQuotesPage()),
+          ),
+          GoRoute(
+            path: '/agent/endorsements',
+            name: 'agent-endorsements',
+            pageBuilder: (context, state) => _noTransition(state: state, child: const AgentEndorsementsPage()),
           ),
 
           // ── Broker Portal (inside shell for bottom nav) ──
