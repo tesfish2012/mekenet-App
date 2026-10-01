@@ -277,6 +277,7 @@ class _AgentQuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
+      _ActionData('Customers', Icons.people_alt_outlined, '/agent/customers'),
       _ActionData('Policies', Icons.shield_outlined, AppConstants.routePolicies),
       _ActionData('Claims', Icons.assignment_outlined, AppConstants.routeClaims),
       _ActionData('Payments', Icons.payments_outlined, AppConstants.routePayments),
