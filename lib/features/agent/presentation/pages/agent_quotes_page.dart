@@ -289,66 +289,170 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    floatingActionButton: FloatingActionButton.extended(onPressed: requestQuote, backgroundColor: AppColors.primary, foregroundColor: Colors.white, icon: const Icon(Icons.request_quote_rounded), label: const Text('Request quote')),
-    body: RefreshIndicator(
-      onRefresh: () async { setState(() => future = load()); await future; },
-      child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
-        const SliverToBoxAdapter(child: ConnectivityBanner()),
-        SliverToBoxAdapter(child: Container(
-          padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 20, 20, 24),
-          decoration: const BoxDecoration(gradient: LinearGradient(colors: AppColors.darkGradient), borderRadius: BorderRadius.vertical(bottom: Radius.circular(24))),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('AGENT PORTAL', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w800, letterSpacing: 1)),
-            const SizedBox(height: 6),
-            Text('My Quotes', style: AppTextStyles.headlineMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            Text('Request and track premium quotes.', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
-          ]),
-        )),
-        SliverToBoxAdapter(child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(onChanged: (v) => setState(() => search = v.toLowerCase()), decoration: InputDecoration(hintText: 'Search quotes', prefixIcon: const Icon(Icons.search), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
-        )),
-        SliverToBoxAdapter(
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: future,
-            builder: (context, s) {
-            if (s.connectionState == ConnectionState.waiting) return const Padding(padding: EdgeInsets.all(28), child: LoadingView());
-            if (s.hasError) return Padding(padding: const EdgeInsets.all(24), child: OutlinedButton.icon(onPressed: () => setState(() => future = load()), icon: const Icon(Icons.refresh), label: const Text('Try again')));
-            final list = (s.data ?? []).where((q) => [
-              value(q, ['quoteNumber'], 'Quote'),
-              value(q, ['customerName'], 'Customer'),
-              value(q, ['status'], 'DRAFT'),
-              value(q, ['policyTitle', 'policyTypeName'], ''),
-            ].join(' ').toLowerCase().contains(search)).toList();
-            if (list.isEmpty) return const Padding(padding: EdgeInsets.all(40), child: Center(child: Text('No quotes found')));
-            return Column(
-              children: [
-                for (final q in list)
-                  Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: ListTile(
-                      leading: CircleAvatar(child: Text(value(q, ['policyTypeEmoji'], '📄'))),
-                      title: Text(value(q, ['quoteNumber'], 'Quote')),
-                      subtitle: Text('${value(q, ['customerName'], 'Customer')} • ${value(q, ['policyTitle', 'policyTypeName'], 'Policy')}'),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(value(q, ['status'], 'DRAFT'), style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
-                          Text(money(q['totalAmount']), style: AppTextStyles.bodySmall),
-                        ],
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: requestQuote,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.request_quote_rounded),
+        label: const Text('Request quote'),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() => future = load());
+          await future;
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const SliverToBoxAdapter(child: ConnectivityBanner()),
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.of(context).padding.top + 20,
+                  20,
+                  24,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: AppColors.darkGradient),
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AGENT PORTAL',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'My Quotes',
+                      style: AppTextStyles.headlineMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Request and track premium quotes.',
+                      style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  onChanged: (v) => setState(() => search = v.toLowerCase()),
+                  decoration: InputDecoration(
+                    hintText: 'Search quotes',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                const SizedBox(height: 100),
-              ],
-            );
-          },
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: future,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(28),
+                      child: LoadingView(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: OutlinedButton.icon(
+                        onPressed: () => setState(() => future = load()),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try again'),
+                      ),
+                    );
+                  }
+
+                  final allQuotes = snapshot.data ?? [];
+                  final filteredQuotes = allQuotes.where((q) {
+                    final searchable = [
+                      value(q, ['quoteNumber'], 'Quote'),
+                      value(q, ['customerName'], 'Customer'),
+                      value(q, ['status'], 'DRAFT'),
+                      value(q, ['policyTitle', 'policyTypeName'], ''),
+                    ].join(' ').toLowerCase();
+
+                    return searchable.contains(search);
+                  }).toList();
+
+                  if (filteredQuotes.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(child: Text('No quotes found')),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      for (final q in filteredQuotes)
+                        Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              child: Text(
+                                value(q, ['policyTypeEmoji'], '📄'),
+                              ),
+                            ),
+                            title: Text(
+                              value(q, ['quoteNumber'], 'Quote'),
+                            ),
+                            subtitle: Text(
+                              '${value(q, ['customerName'], 'Customer')} • '
+                              '${value(q, ['policyTitle', 'policyTypeName'], 'Policy')}',
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  value(q, ['status'], 'DRAFT'),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  money(q['totalAmount']),
+                                  style: AppTextStyles.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 100),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
