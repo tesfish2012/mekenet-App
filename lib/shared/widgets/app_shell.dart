@@ -66,9 +66,9 @@ class _AgentBottomNav extends StatelessWidget {
 
     final items = [
       _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
-      _NavItem(icon: Icons.shield_rounded, label: 'Policies', path: '/policies'),
-      _NavItem(icon: Icons.assignment_rounded, label: 'Claims', path: '/claims'),
       _NavItem(icon: Icons.people_alt_rounded, label: 'Customers', path: '/agent/customers'),
+      _NavItem(icon: Icons.request_quote_rounded, label: 'Quotes', path: '/agent/quotes'),
+      _NavItem(icon: Icons.edit_document, label: 'Changes', path: '/agent/endorsements'),
       _NavItem(icon: Icons.person_rounded, label: 'Profile', path: '/profile'),
     ];
 
