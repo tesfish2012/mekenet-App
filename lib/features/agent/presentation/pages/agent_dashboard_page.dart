@@ -281,7 +281,7 @@ class _AgentQuickActions extends StatelessWidget {
       _ActionData('Policies', Icons.shield_outlined, AppConstants.routePolicies),
       _ActionData('Claims', Icons.assignment_outlined, AppConstants.routeClaims),
       _ActionData('Payments', Icons.payments_outlined, AppConstants.routePayments),
-      _ActionData('My profile', Icons.person_outline_rounded, AppConstants.routeProfile),
+
     ];
 
     return Padding(
