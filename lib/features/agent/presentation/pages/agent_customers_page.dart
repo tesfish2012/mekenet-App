@@ -56,7 +56,7 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
   }
 
   String _customerName(Map<String, dynamic> item) {
-    final combined = _firstValue(item, ['fullName', 'name', 'customerName', 'displayName']);
+    final combined = _firstValue(item, ['userName', 'fullName', 'name', 'customerName', 'displayName']);
     if (combined.isNotEmpty) return combined;
     final first = _firstValue(item, ['firstName', 'firstname']);
     final last = _firstValue(item, ['lastName', 'lastname']);
@@ -70,8 +70,8 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
 
     final firstName = TextEditingController(text: _firstValue(customer, ['firstName', 'firstname']));
     final lastName = TextEditingController(text: _firstValue(customer, ['lastName', 'lastname']));
-    final email = TextEditingController(text: _firstValue(customer, ['email', 'emailAddress']));
-    final phone = TextEditingController(text: _firstValue(customer, ['phone', 'phoneNumber', 'mobile']));
+    final email = TextEditingController(text: _firstValue(customer, ['userEmail', 'email', 'emailAddress']));
+    final phone = TextEditingController(text: _firstValue(customer, ['userPhone', 'phone', 'phoneNumber', 'mobile']));
     final formKey = GlobalKey<FormState>();
 
     try {
@@ -312,101 +312,229 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
 
   Future<void> _showCreateCustomerDialog() async {
     final formKey = GlobalKey<FormState>();
-    final firstName = TextEditingController();
-    final lastName = TextEditingController();
+    final name = TextEditingController();
     final email = TextEditingController();
+    final password = TextEditingController();
     final phone = TextEditingController();
+    final company = TextEditingController();
+    final age = TextEditingController();
+    final height = TextEditingController();
+    final weight = TextEditingController();
+    final taxNumber = TextEditingController();
+    final city = TextEditingController();
+    final state = TextEditingController();
+    final country = TextEditingController(text: 'Ethiopia');
+    final zipCode = TextEditingController();
+    final address = TextEditingController();
+    final notes = TextEditingController();
+    DateTime dob = DateTime.now();
+    String gender = 'M';
+    String maritalStatus = 'SINGLE';
+    String bloodGroup = 'UNKNOWN';
+    bool sendPasswordViaSms = false;
     bool submitting = false;
 
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Add customer'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: firstName,
-                    decoration: const InputDecoration(labelText: 'First name'),
-                    validator: (value) => value == null || value.trim().isEmpty ? 'First name is required' : null,
+    String dateOnly(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    Future<void> pickDob(BuildContext dialogContext, StateSetter setDialogState) async {
+      final picked = await showDatePicker(
+        context: dialogContext,
+        initialDate: dob,
+        firstDate: DateTime(1900),
+        lastDate: DateTime.now(),
+      );
+      if (picked != null) setDialogState(() => dob = picked);
+    }
+
+    Widget field(TextEditingController controller, String label,
+        {TextInputType? keyboardType, bool required = false, int maxLines = 1}) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          decoration: InputDecoration(labelText: label),
+          validator: required
+              ? (v) => v == null || v.trim().isEmpty ? '$label is required' : null
+              : null,
+        ),
+      );
+    }
+
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Add customer'),
+            content: SizedBox(
+              width: 520,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      field(name, 'Full name', required: true),
+                      field(email, 'Email', keyboardType: TextInputType.emailAddress),
+                      field(password, 'Password', required: true),
+                      field(phone, 'Phone', keyboardType: TextInputType.phone),
+                      field(company, 'Company'),
+                      Row(children: [
+                        Expanded(child: OutlinedButton.icon(
+                          onPressed: () => pickDob(dialogContext, setDialogState),
+                          icon: const Icon(Icons.calendar_today_outlined),
+                          label: Text('DOB: ${dateOnly(dob)}'),
+                        )),
+                      ]),
+                      const SizedBox(height: 10),
+                      Row(children: [
+                        Expanded(child: DropdownButtonFormField<String>(
+                          value: gender,
+                          decoration: const InputDecoration(labelText: 'Gender'),
+                          items: const [
+                            DropdownMenuItem(value: 'M', child: Text('Male')),
+                            DropdownMenuItem(value: 'F', child: Text('Female')),
+                            DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+                          ],
+                          onChanged: (v) => setDialogState(() => gender = v ?? gender),
+                        )),
+                        const SizedBox(width: 10),
+                        Expanded(child: DropdownButtonFormField<String>(
+                          value: maritalStatus,
+                          decoration: const InputDecoration(labelText: 'Marital status'),
+                          items: const [
+                            DropdownMenuItem(value: 'SINGLE', child: Text('Single')),
+                            DropdownMenuItem(value: 'MARRIED', child: Text('Married')),
+                            DropdownMenuItem(value: 'DIVORCED', child: Text('Divorced')),
+                            DropdownMenuItem(value: 'WIDOWED', child: Text('Widowed')),
+                          ],
+                          onChanged: (v) => setDialogState(() => maritalStatus = v ?? maritalStatus),
+                        )),
+                      ]),
+                      const SizedBox(height: 10),
+                      Row(children: [
+                        Expanded(child: DropdownButtonFormField<String>(
+                          value: bloodGroup,
+                          decoration: const InputDecoration(labelText: 'Blood group'),
+                          items: const [
+                            DropdownMenuItem(value: 'UNKNOWN', child: Text('Unknown')),
+                            DropdownMenuItem(value: 'A+', child: Text('A+')),
+                            DropdownMenuItem(value: 'A-', child: Text('A-')),
+                            DropdownMenuItem(value: 'B+', child: Text('B+')),
+                            DropdownMenuItem(value: 'B-', child: Text('B-')),
+                            DropdownMenuItem(value: 'AB+', child: Text('AB+')),
+                            DropdownMenuItem(value: 'AB-', child: Text('AB-')),
+                            DropdownMenuItem(value: 'O+', child: Text('O+')),
+                            DropdownMenuItem(value: 'O-', child: Text('O-')),
+                          ],
+                          onChanged: (v) => setDialogState(() => bloodGroup = v ?? bloodGroup),
+                        )),
+                        const SizedBox(width: 10),
+                        Expanded(child: field(age, 'Age', keyboardType: TextInputType.number)),
+                      ]),
+                      Row(children: [
+                        Expanded(child: field(height, 'Height', keyboardType: TextInputType.number)),
+                        const SizedBox(width: 10),
+                        Expanded(child: field(weight, 'Weight', keyboardType: TextInputType.number)),
+                      ]),
+                      field(taxNumber, 'Tax number'),
+                      field(city, 'City'),
+                      field(state, 'State'),
+                      field(country, 'Country'),
+                      field(zipCode, 'ZIP code'),
+                      field(address, 'Address', maxLines: 2),
+                      field(notes, 'Notes', maxLines: 3),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Send password via SMS'),
+                        value: sendPasswordViaSms,
+                        onChanged: (v) => setDialogState(() => sendPasswordViaSms = v),
+                      ),
+                    ],
                   ),
-                  TextFormField(
-                    controller: lastName,
-                    decoration: const InputDecoration(labelText: 'Last name'),
-                    validator: (value) => value == null || value.trim().isEmpty ? 'Last name is required' : null,
-                  ),
-                  TextFormField(
-                    controller: email,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'Email (optional)'),
-                  ),
-                  TextFormField(
-                    controller: phone,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(labelText: 'Phone number'),
-                  ),
-                ],
+                ),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: submitting ? null : () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: submitting ? null : () async {
+                  if (!formKey.currentState!.validate()) return;
+                  setDialogState(() => submitting = true);
+                  final now = DateTime.now();
+                  final computedAge = int.tryParse(age.text.trim()) ??
+                      now.year - dob.year -
+                      ((now.month < dob.month || (now.month == dob.month && now.day < dob.day)) ? 1 : 0);
+                  try {
+                    await getIt<Dio>().post(
+                      ApiEndpoints.agentCustomers,
+                      data: {
+                        'name': name.text.trim(),
+                        'email': email.text.trim(),
+                        'password': password.text,
+                        'phone': phone.text.trim(),
+                        'profileImagePath': '',
+                        'sendPasswordViaSms': sendPasswordViaSms,
+                        'company': company.text.trim(),
+                        'dob': dateOnly(dob),
+                        'age': computedAge,
+                        'gender': gender,
+                        'maritalStatus': maritalStatus,
+                        'bloodGroup': bloodGroup,
+                        'height': double.tryParse(height.text.trim()) ?? 0,
+                        'weight': double.tryParse(weight.text.trim()) ?? 0,
+                        'taxNumber': taxNumber.text.trim(),
+                        'city': city.text.trim(),
+                        'state': state.text.trim(),
+                        'country': country.text.trim(),
+                        'zipCode': zipCode.text.trim(),
+                        'address': address.text.trim(),
+                        'notes': notes.text.trim(),
+                      },
+                    );
+                    if (!mounted) return;
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(content: Text('Customer created successfully')),
+                    );
+                    await _refresh();
+                  } on DioException catch (error) {
+                    setDialogState(() => submitting = false);
+                    final response = error.response?.data;
+                    final message = response is Map
+                        ? (response['message'] ?? response['error'] ?? 'Unable to create customer').toString()
+                        : 'Unable to create customer. Check the required customer fields.';
+                    ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text(message)));
+                  } catch (_) {
+                    setDialogState(() => submitting = false);
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(content: Text('Unable to create customer. Please try again.')),
+                    );
+                  }
+                },
+                child: submitting
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Create'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: submitting ? null : () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: submitting ? null : () async {
-                if (!formKey.currentState!.validate()) return;
-                setDialogState(() => submitting = true);
-                try {
-                  await getIt<Dio>().post(
-                    ApiEndpoints.agentCustomers,
-                    data: {
-                      'firstName': firstName.text.trim(),
-                      'lastName': lastName.text.trim(),
-                      if (email.text.trim().isNotEmpty) 'email': email.text.trim(),
-                      if (phone.text.trim().isNotEmpty) 'phone': phone.text.trim(),
-                    },
-                  );
-                  if (!mounted) return;
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    const SnackBar(content: Text('Customer created successfully')),
-                  );
-                  await _refresh();
-                } on DioException catch (error) {
-                  setDialogState(() => submitting = false);
-                  final response = error.response?.data;
-                  final message = response is Map
-                      ? (response['message'] ?? response['error'] ?? 'Unable to create customer').toString()
-                      : 'Unable to create customer. Check the required customer fields.';
-                  ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text(message)));
-                } catch (_) {
-                  setDialogState(() => submitting = false);
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    const SnackBar(content: Text('Unable to create customer. Please try again.')),
-                  );
-                }
-              },
-              child: submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Create'),
-            ),
-          ],
         ),
-      ),
-    );
-
-    firstName.dispose();
-    lastName.dispose();
-    email.dispose();
-    phone.dispose();
+      );
+    } finally {
+      for (final controller in [
+        name, email, password, phone, company, age, height, weight, taxNumber,
+        city, state, country, zipCode, address, notes
+      ]) {
+        controller.dispose();
+      }
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -511,8 +639,8 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                   final customers = all.where((item) {
                     final searchable = [
                       _customerName(item),
-                      _firstValue(item, ['email', 'emailAddress']),
-                      _firstValue(item, ['phone', 'phoneNumber', 'mobile']),
+                      _firstValue(item, ['userEmail', 'email', 'emailAddress']),
+                      _firstValue(item, ['userPhone', 'phone', 'phoneNumber', 'mobile']),
                     ].join(' ').toLowerCase();
                     return searchable.contains(_search);
                   }).toList();
@@ -551,8 +679,8 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                       ),
                       ...customers.map((item) {
                         final name = _customerName(item);
-                        final email = _firstValue(item, ['email', 'emailAddress'], fallback: 'No email provided');
-                        final phone = _firstValue(item, ['phone', 'phoneNumber', 'mobile'], fallback: 'No phone provided');
+                        final email = _firstValue(item, ['userEmail', 'email', 'emailAddress'], fallback: 'No email provided');
+                        final phone = _firstValue(item, ['userPhone', 'phone', 'phoneNumber', 'mobile'], fallback: 'No phone provided');
                         final id = _firstValue(item, ['id', 'customerId'], fallback: '—');
                         return InkWell(
                           onTap: () => _showCustomerDetails(item),
