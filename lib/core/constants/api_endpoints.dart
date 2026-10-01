@@ -74,6 +74,11 @@ class ApiEndpoints {
   static const String portalPolicyFors = '/portal/policy-fors';
   static const String portalDocumentTypes = '/portal/document-types';
 
+  // ── Portal – Agent ──────────────────────────────────────
+  static const String agentCustomers = '/portal/agent/customers';
+  static String agentCustomerById(int id) => '/portal/agent/customers/$id';
+  static String agentCustomerDetail(int id) => '/portal/agent/customers/$id/detail';
+
   // ── Portal – Broker ──────────────────────────────────────
   static const String brokerDashboard = '/portal/broker/dashboard';
   static const String brokerAgreements = '/portal/broker/agreements';
