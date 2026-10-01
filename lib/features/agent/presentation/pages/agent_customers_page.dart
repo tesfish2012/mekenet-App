@@ -64,6 +64,162 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
     return joined.isEmpty ? 'Customer' : joined;
   }
 
+  void _showCustomerDetails(Map<String, dynamic> customer) {
+    final id = int.tryParse(_firstValue(customer, ['id', 'customerId']));
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer ID is missing.')),
+      );
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.65,
+        minChildSize: 0.4,
+        maxChildSize: 0.92,
+        builder: (context, controller) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: FutureBuilder<Response<dynamic>>(
+            future: getIt<Dio>().get(ApiEndpoints.agentCustomerDetail(id)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: LoadingView());
+              }
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Unable to load customer details.'),
+                        const SizedBox(height: 8),
+                        OutlinedButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              final responseData = snapshot.data?.data;
+              final dynamic payload = responseData is Map
+                  ? (responseData['data'] ?? responseData)
+                  : responseData;
+              final details = payload is Map
+                  ? Map<String, dynamic>.from(payload)
+                  : customer;
+              final insurances = details['insurances'] ?? details['insuranceContracts'] ?? details['policies'];
+              final entries = details.entries.where((entry) =>
+                  entry.value != null &&
+                  entry.value is! Map &&
+                  entry.value is! List &&
+                  !{'password', 'token'}.contains(entry.key.toLowerCase())).toList();
+
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(color: AppColors.grey400, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(_customerName(details),
+                            style: AppTextStyles.titleLarge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: controller,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      children: [
+                        Text('Customer profile', style: AppTextStyles.titleMedium),
+                        const SizedBox(height: 8),
+                        ...entries.map((entry) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  entry.key.replaceAllMapped(
+                                    RegExp(r'([A-Z])'),
+                                    (match) => ' ${match.group(1)}',
+                                  ).replaceAll('_', ' '),
+                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey600),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Text(entry.value.toString(), style: AppTextStyles.bodyMedium),
+                              ),
+                            ],
+                          ),
+                        )),
+                        if (insurances is List) ...[
+                          const SizedBox(height: 16),
+                          Text('Assigned insurance', style: AppTextStyles.titleMedium),
+                          const SizedBox(height: 8),
+                          if (insurances.isEmpty)
+                            const Text('No insurance records found.')
+                          else
+                            ...insurances.map((insurance) {
+                              final item = insurance is Map ? insurance : <String, dynamic>{'details': insurance};
+                              final label = item['policyName'] ?? item['policyTitle'] ?? item['insuranceNumber'] ?? item['policyNumber'] ?? 'Insurance';
+                              final status = item['status'] ?? item['policyStatus'] ?? '';
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.lightBorder),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.shield_outlined, color: AppColors.primary),
+                                    const SizedBox(width: 10),
+                                    Expanded(child: Text(label.toString(), style: AppTextStyles.titleSmall)),
+                                    Text(status.toString(), style: AppTextStyles.bodySmall),
+                                  ],
+                                ),
+                              );
+                            }),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _showCreateCustomerDialog() async {
     final formKey = GlobalKey<FormState>();
     final firstName = TextEditingController();
@@ -308,7 +464,10 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                         final email = _firstValue(item, ['email', 'emailAddress'], fallback: 'No email provided');
                         final phone = _firstValue(item, ['phone', 'phoneNumber', 'mobile'], fallback: 'No phone provided');
                         final id = _firstValue(item, ['id', 'customerId'], fallback: '—');
-                        return Container(
+                        return InkWell(
+                          onTap: () => _showCustomerDetails(item),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
                           margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
@@ -352,6 +511,7 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
                                 child: Text('#$id', style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
                               ),
                             ],
+                          ),
                           ),
                         );
                       }),
