@@ -18,13 +18,181 @@ class _AgentEndorsementsPageState extends State<AgentEndorsementsPage>{
     setState(()=>loading=true);
     try{final r=await getIt<Dio>().get(ApiEndpoints.agentEndorsementsForInsurance(insuranceId));dynamic d=r.data;if(d is Map)d=d['data']??d['content']??d['items']??d['endorsements']??[];setState(()=>items=d is List?d.whereType<Map>().map((e)=>Map<String,dynamic>.from(e)).toList():[]);}catch(_){if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Unable to load endorsements')));}finally{if(mounted)setState(()=>loading=false);}
   }
-  Future<void> submit()async{
-    final insuranceId=int.tryParse(id.text.trim());if(insuranceId==null){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Enter the insurance ID first')));return;}
-    final request=TextEditingController();bool saving=false;
-    await showDialog(context:context,builder:(ctx)=>StatefulBuilder(builder:(ctx,set)=>AlertDialog(title:const Text('Submit endorsement'),content:TextField(controller:request,maxLines:4,decoration:const InputDecoration(labelText:'Requested change')),actions:[
-      TextButton(onPressed:saving?null:()=>Navigator.pop(ctx),child:const Text('Cancel')),
-      FilledButton(onPressed:saving?null:()async{if(request.text.trim().isEmpty)return;set(()=>saving=true);try{await getIt<Dio>().post(ApiEndpoints.agentEndorsements,data:{'insuranceId':insuranceId,'request':request.text.trim()});if(mounted)Navigator.pop(ctx);await load();if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Endorsement submitted')));}catch(_){set(()=>saving=false);}},child:saving?const SizedBox(width:18,height:18,child:CircularProgressIndicator(strokeWidth:2)):const Text('Submit'))
-    ])));request.dispose();
+  Future<void> submit() async {
+    final insuranceId = int.tryParse(id.text.trim());
+    if (insuranceId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter the insurance ID first')),
+      );
+      return;
+    }
+
+    final request = TextEditingController();
+    final newSumAssured = TextEditingController(text: '0');
+    final newPremium = TextEditingController(text: '0');
+    final description = TextEditingController();
+    final adminNotes = TextEditingController();
+    String endorsementType = 'SUM_INSURED_CHANGE';
+    DateTime effectiveDate = DateTime.now();
+
+    String dateOnly(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    try {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            title: const Text('Submit endorsement'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: endorsementType,
+                    decoration: const InputDecoration(labelText: 'Endorsement Type'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'SUM_INSURED_CHANGE',
+                        child: Text('Sum Insured Change'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'PREMIUM_CHANGE',
+                        child: Text('Premium Change'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'OTHER',
+                        child: Text('Other'),
+                      ),
+                    ],
+                    onChanged: (v) => setDialogState(() {
+                      endorsementType = v ?? 'SUM_INSURED_CHANGE';
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newSumAssured,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'New Sum Assured',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newPremium,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'New Premium',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: dialogContext,
+                        initialDate: effectiveDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setDialogState(() => effectiveDate = picked);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Effective Date',
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      child: Text(dateOnly(effectiveDate)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: request,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Change Request / Description',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: description,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: adminNotes,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Admin Notes',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  try {
+                    final payload = {
+                      'insuranceId': insuranceId,
+                      'requestedById': 0,
+                      'endorsementType': endorsementType,
+                      'newSumAssured': double.tryParse(newSumAssured.text.trim()) ?? 0,
+                      'newPremium': double.tryParse(newPremium.text.trim()) ?? 0,
+                      'effectiveDate': dateOnly(effectiveDate),
+                      'description': description.text.trim().isNotEmpty
+                          ? description.text.trim()
+                          : request.text.trim(),
+                      'adminNotes': adminNotes.text.trim(),
+                    };
+
+                    await getIt<Dio>().post(
+                      ApiEndpoints.agentEndorsements,
+                      data: payload,
+                    );
+
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop(true);
+                    }
+                  } catch (_) {
+                    if (dialogContext.mounted) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Unable to submit endorsement'),
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (mounted) {
+        await load();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Endorsement submitted')),
+        );
+      }
+    } finally {
+      request.dispose();
+      newSumAssured.dispose();
+      newPremium.dispose();
+      description.dispose();
+      adminNotes.dispose();
+    }
   }
   @override void dispose(){id.dispose();super.dispose();}
   @override Widget build(BuildContext context)=>Scaffold(
