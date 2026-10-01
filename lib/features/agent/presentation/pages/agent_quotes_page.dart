@@ -58,6 +58,18 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
     return d.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
   }
 
+  Future<DateTime?> _pickDate(DateTime initialDate) async {
+    return showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+  }
+
+  String _formatDate(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
   Future<void> requestQuote() async {
     final policyId = TextEditingController();
     final sumAssured = TextEditingController();
@@ -95,6 +107,9 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
     bool engagesHazardousActivity = false;
     final hazardousDescription = TextEditingController();
     bool saving = false;
+    DateTime selectedDob = DateTime(1990, 1, 1);
+    DateTime selectedDeparture = DateTime.now();
+    DateTime selectedReturn = DateTime.now().add(const Duration(days: 1));
 
     try {
       await showDialog<void>(
@@ -110,7 +125,27 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
                   children: [
                     TextField(controller: policyId, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Policy ID *')),
                     TextField(controller: lifeName, decoration: const InputDecoration(labelText: 'Life assured name *')),
-                    TextField(controller: dob, decoration: const InputDecoration(labelText: 'Date of birth (YYYY-MM-DD)')),
+                    InkWell(
+                      onTap: saving ? null : () async {
+                        final picked = await _pickDate(selectedDob);
+                        if (picked != null) {
+                          set(() {
+                            selectedDob = picked;
+                            dob.text = _formatDate(picked);
+                          });
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Date of birth',
+                          suffixIcon: Icon(Icons.calendar_today_outlined),
+                        ),
+                        child: Text(
+                          dob.text.isEmpty ? 'Select date' : dob.text,
+                        ),
+                      ),
+                    ),
                     TextField(controller: sumAssured, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Sum assured *')),
                     Row(children: [
                       Expanded(child: DropdownButtonFormField<String>(value: lineOfBusiness, decoration: const InputDecoration(labelText: 'Line of business'), items: const [
@@ -196,8 +231,71 @@ class _AgentQuotesPageState extends State<AgentQuotesPage> {
                       ], onChanged: (v) => set(() => packingType = v ?? packingType))),
                     ]),
                     TextField(controller: destinationCountry, decoration: const InputDecoration(labelText: 'Destination country')),
-                    TextField(controller: departureDate, decoration: const InputDecoration(labelText: 'Departure date')),
-                    TextField(controller: returnDate, decoration: const InputDecoration(labelText: 'Return date')),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: saving ? null : () async {
+                              final picked = await _pickDate(selectedDeparture);
+                              if (picked != null) {
+                                set(() {
+                                  selectedDeparture = picked;
+                                  departureDate.text = _formatDate(picked);
+                                  if (selectedReturn.isBefore(picked)) {
+                                    selectedReturn = picked.add(const Duration(days: 1));
+                                    returnDate.text = _formatDate(selectedReturn);
+                                  }
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Departure date',
+                                suffixIcon: Icon(Icons.calendar_today_outlined),
+                              ),
+                              child: Text(
+                                departureDate.text.isEmpty ? 'Select date' : departureDate.text,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: InkWell(
+                            onTap: saving ? null : () async {
+                              final picked = await _pickDate(
+                                selectedReturn.isBefore(selectedDeparture)
+                                    ? selectedDeparture.add(const Duration(days: 1))
+                                    : selectedReturn,
+                              );
+                              if (picked != null) {
+                                if (picked.isBefore(selectedDeparture)) {
+                                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                    const SnackBar(content: Text('Return date must be after departure date.')),
+                                  );
+                                  return;
+                                }
+                                set(() {
+                                  selectedReturn = picked;
+                                  returnDate.text = _formatDate(picked);
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Return date',
+                                suffixIcon: Icon(Icons.calendar_today_outlined),
+                              ),
+                              child: Text(
+                                returnDate.text.isEmpty ? 'Select date' : returnDate.text,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     Row(children: [
                       Expanded(child: DropdownButtonFormField<String>(value: tripType, decoration: const InputDecoration(labelText: 'Trip type'), items: const [
                         DropdownMenuItem(value: 'SINGLE', child: Text('Single')),
