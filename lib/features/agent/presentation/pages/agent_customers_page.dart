@@ -141,12 +141,6 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to update customer. Please try again.')),
       );
-      if (created == true && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Customer created successfully')),
-        );
-        await _refresh();
-      }
     } finally {
       firstName.dispose();
       lastName.dispose();
@@ -531,6 +525,12 @@ class _AgentCustomersPageState extends ConsumerState<AgentCustomersPage> {
           ),
         ),
       );
+      if (created == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Customer created successfully')),
+        );
+        await _refresh();
+      }
     } finally {
       for (final controller in [
         name, email, password, phone, company, age, height, weight, taxNumber,
