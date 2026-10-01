@@ -68,7 +68,7 @@ class _AgentBottomNav extends StatelessWidget {
       _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
       _NavItem(icon: Icons.shield_rounded, label: 'Policies', path: '/policies'),
       _NavItem(icon: Icons.assignment_rounded, label: 'Claims', path: '/claims'),
-      _NavItem(icon: Icons.folder_open_rounded, label: 'Documents', path: '/documents'),
+      _NavItem(icon: Icons.payment_rounded, label: 'Payments', path: '/payments'),
       _NavItem(icon: Icons.person_rounded, label: 'Profile', path: '/profile'),
     ];
 
