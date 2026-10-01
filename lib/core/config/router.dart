@@ -16,6 +16,7 @@ import '../../features/broker/presentation/pages/broker_documents_page.dart';
 import '../../features/broker/presentation/pages/broker_endorsements_page.dart';
 import '../../features/broker/presentation/pages/broker_policies_page.dart';
 import '../../features/broker/presentation/pages/broker_profile_page.dart';
+import '../../features/agent/presentation/pages/agent_customers_page.dart';
 import '../../features/claims/presentation/pages/claims_page.dart';
 import '../../features/claims/presentation/pages/claim_detail_page.dart';
 import '../../features/claims/presentation/pages/new_claim_page.dart';
@@ -229,6 +230,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => _noTransition(
               state: state,
               child: const ProfilePage(),
+            ),
+          ),
+
+          // ── Agent Portal ────────────────────────────────
+          GoRoute(
+            path: '/agent/customers',
+            name: 'agent-customers',
+            pageBuilder: (context, state) => _noTransition(
+              state: state,
+              child: const AgentCustomersPage(),
             ),
           ),
 
